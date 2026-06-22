@@ -50,10 +50,10 @@ export async function checkin(sessionKey: Buffer, auth: AuthResult, publicKey: s
 }
 
 /** Send LOGINLIST to establish a LOCO session and get chat room list */
-export async function loginList(sessionKey: Buffer, auth: AuthResult, host: string, port: number, appVer: string, deviceUuid: string): Promise<Document> {
+export async function loginList(sessionKey: Buffer, auth: AuthResult, host: string, port: number, appVer: string, deviceUuid: string, publicKey: string): Promise<Document> {
   const socket = await connectSocket({ host, port });
   try {
-    socket.write(createHandshake(sessionKey, sessionKey)); // LOCO server needs its own handshake
+    socket.write(createHandshake(publicKey, sessionKey));
     const body = Buffer.from(BSON.serialize({
       os: "android",
       ntype: 0,
@@ -91,7 +91,7 @@ export async function establishSession(config: SessionConfig): Promise<LocoSessi
   const sessionKey = randomBytes(16);
   try {
     const locoServer = await checkin(sessionKey, config.auth, publicKey, appVer);
-    await loginList(sessionKey, config.auth, locoServer.host, locoServer.port, appVer, deviceUuid);
+    await loginList(sessionKey, config.auth, locoServer.host, locoServer.port, appVer, deviceUuid, publicKey);
     return { userId: config.auth.userId, auth: config.auth, sessionKey, locoServer };
   } catch (error) {
     sessionKey.fill(0);
