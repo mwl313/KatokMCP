@@ -73,18 +73,22 @@ export type {
   LocoSession,
 } from "./auth/types.js";
 
-// Session (B-4)
+// Session (B-4) — LocoClient with persistent connection
 export {
   checkin,
-  loginList,
-  establishSession,
+  LocoClient,
 } from "./session.js";
 export type { SessionConfig } from "./session.js";
 
+// Persistent Connection
+export {
+  LocoConnection,
+} from "./connection.js";
+
 // Command Modules (B-5 + B-6)
 export {
-  sendLchatList,
-  sendSyncMsg,
+  sendLchatListOn,
+  sendSyncMsgOn,
   sendPing,
   getChatId,
   getMessageText,

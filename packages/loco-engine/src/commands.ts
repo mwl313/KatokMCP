@@ -2,12 +2,13 @@
  * LOCO Protocol Command Modules — LCHATLIST and SYNCMSG.
  * 
  * Based on KiwiTalk talk-loco-client source code analysis.
+ * Uses LocoConnection (persistent connection) to avoid -201 errors.
  */
 
 import { BSON, Long, type Document } from "bson";
 import { encodeHeader, LOCO_HEADER_SIZE } from "./protocol/header.js";
-import { createHandshake } from "./crypto/handshake.js";
-import { connectSocket, sendAndReceive } from "./transport/socket.js";
+import { LocoConnection } from "./connection.js";
+import type { LocoClient } from "./session.js";
 import type { LocoSession } from "./auth/types.js";
 
 export interface LchatListRequest {
@@ -24,16 +25,54 @@ export interface SyncMsgRequest {
   cnt: number;
 }
 
-/** Send LCHATLIST to fetch more chat room data (paginated) */
+/** Send LCHATLIST on a persistent connection (via LocoClient) */
+export async function sendLchatListOn(
+  client: LocoClient,
+  req: LchatListRequest,
+): Promise<Document> {
+  const body = Buffer.from(BSON.serialize({
+    chatIds: req.chatIds.map((v) => Long.fromBigInt(v)),
+    maxIds: req.maxIds.map((v) => Long.fromBigInt(v)),
+    lastTokenId: Long.fromBigInt(BigInt(req.lastTokenId)),
+    lastChatId: Long.fromBigInt(BigInt(req.lastChatId)),
+  }));
+  return client.sendRaw("LCHATLIST", body);
+}
+
+/** Send SYNCMSG on a persistent connection (via LocoClient) */
+export async function sendSyncMsgOn(
+  client: LocoClient,
+  req: SyncMsgRequest,
+): Promise<Document> {
+  const body = Buffer.from(BSON.serialize({
+    chatId: Long.fromBigInt(req.chatId),
+    cur: Long.fromBigInt(req.cur),
+    max: Long.fromBigInt(req.max),
+    cnt: req.cnt,
+  }));
+  return client.sendRaw("SYNCMSG", body);
+}
+
+/** Send PING on a persistent connection (via LocoClient) */
+export async function sendPing(
+  client: LocoClient,
+): Promise<void> {
+  const body = Buffer.alloc(0);
+  await client.sendRaw("PING", body);
+}
+
+// ─── Legacy functions (create new connection each time — may cause -201) ───
+
+/** @deprecated Use sendLchatListOn instead — creates new connection per call */
 export async function sendLchatList(
   session: LocoSession,
   req: LchatListRequest,
   publicKey: string,
   appVer: string,
 ): Promise<Document> {
-  const socket = await connectSocket({ host: session.locoServer.host, port: session.locoServer.port });
+  const conn = new LocoConnection(session.locoServer.host, session.locoServer.port, publicKey);
+  await conn.connect();
   try {
-    socket.write(createHandshake(publicKey, session.sessionKey));
     const body = Buffer.from(BSON.serialize({
       chatIds: req.chatIds.map((v) => Long.fromBigInt(v)),
       maxIds: req.maxIds.map((v) => Long.fromBigInt(v)),
@@ -41,22 +80,22 @@ export async function sendLchatList(
       lastChatId: Long.fromBigInt(BigInt(req.lastChatId)),
     }));
     const packet = encodeHeader(1, "LCHATLIST", 0, body);
-    const response = await sendAndReceive(socket, session.sessionKey, packet);
+    const response = await conn.command(packet);
     if (response.length < LOCO_HEADER_SIZE) throw new Error("LCHATLIST response too short");
     return BSON.deserialize(response.subarray(LOCO_HEADER_SIZE)) as Document;
-  } finally { socket.destroy(); }
+  } finally { conn.close(); }
 }
 
-/** Send SYNCMSG to fetch message logs from a specific chat room */
+/** @deprecated Use sendSyncMsgOn instead — creates new connection per call */
 export async function sendSyncMsg(
   session: LocoSession,
   req: SyncMsgRequest,
   publicKey: string,
   appVer: string,
 ): Promise<Document> {
-  const socket = await connectSocket({ host: session.locoServer.host, port: session.locoServer.port });
+  const conn = new LocoConnection(session.locoServer.host, session.locoServer.port, publicKey);
+  await conn.connect();
   try {
-    socket.write(createHandshake(publicKey, session.sessionKey));
     const body = Buffer.from(BSON.serialize({
       chatId: Long.fromBigInt(req.chatId),
       cur: Long.fromBigInt(req.cur),
@@ -64,24 +103,13 @@ export async function sendSyncMsg(
       cnt: req.cnt,
     }));
     const packet = encodeHeader(1, "SYNCMSG", 0, body);
-    const response = await sendAndReceive(socket, session.sessionKey, packet);
+    const response = await conn.command(packet);
     if (response.length < LOCO_HEADER_SIZE) throw new Error("SYNCMSG response too short");
     return BSON.deserialize(response.subarray(LOCO_HEADER_SIZE)) as Document;
-  } finally { socket.destroy(); }
+  } finally { conn.close(); }
 }
 
-/** Send PING to keep connection alive */
-export async function sendPing(
-  session: LocoSession,
-  publicKey: string,
-): Promise<void> {
-  const socket = await connectSocket({ host: session.locoServer.host, port: session.locoServer.port });
-  try {
-    socket.write(createHandshake(publicKey, session.sessionKey));
-    const packet = encodeHeader(1, "PING", 0, Buffer.alloc(0));
-    await sendAndReceive(socket, session.sessionKey, packet);
-  } finally { socket.destroy(); }
-}
+// ─── Helpers ──────────────────────────────────────────────────────────────
 
 /** Extract chat room ID from a LOCO chat data document */
 export function getChatId(data: Document): bigint {
