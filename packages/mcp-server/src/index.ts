@@ -29,6 +29,8 @@ import {
   readAndroidCredentialsFromEnvironment,
   sendSyncMsgOn,
   sendLchatListOn,
+  sendWrite,
+  sendDeleteMsg,
   getChatId,
   getMessageText,
   LocoError,
@@ -138,6 +140,24 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         required: ["chatId"],
       },
     },
+    {
+      name: "kakao_send_chat",
+      description: "Send a message to a KakaoTalk chat room. REQUIRES explicit opt-in via KAKAO_ALLOW_WRITE=YES.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          chatId: {
+            type: "string",
+            description: "Chat room ID to send message to",
+          },
+          message: {
+            type: "string",
+            description: "Message text to send",
+          },
+        },
+        required: ["chatId", "message"],
+      },
+    },
   ],
 }));
 
@@ -160,6 +180,26 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (!loginResp) throw new Error("No login response available");
         const formatted = formatChatList(loginResp);
         result = { content: [{ type: "text", text: formatted }] };
+        break;
+      }
+
+      case "kakao_send_chat": {
+        if (process.env.KAKAO_ALLOW_WRITE !== "YES") {
+          throw new Error("Message sending is opt-in. Set KAKAO_ALLOW_WRITE=YES to enable.");
+        }
+        const c = await ensureClient();
+        const chatId = BigInt(String(args?.chatId ?? ""));
+        const message = String(args?.message ?? "");
+        if (!message.trim()) throw new Error("Message cannot be empty");
+        if (message.length > 10000) throw new Error("Message too long (max 10000 chars)");
+
+        const prefix = process.env.KAKAO_AI_PREFIX !== "false" ? "🤖 " : "";
+        const sendResult = await sendWrite(c, {
+          chatId,
+          message: prefix + message,
+        });
+        const logId = sendResult.logId ?? "(unknown)";
+        result = { content: [{ type: "text", text: `Message sent. (logId: ${logId})` }] };
         break;
       }
 
