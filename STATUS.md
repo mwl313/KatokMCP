@@ -1,6 +1,6 @@
 # STATUS.md — Phase A 진행 현황
 
-> 마지막 업데이트: 2026-06-22 16:10
+> 마지막 업데이트: 2026-06-22 16:21
 > 각 Task 완료/실패 시 아래 표를 채우고 `git commit && git push`
 
 ---
@@ -40,12 +40,12 @@
 - **결과 요약:** 실제 LOCO AES-128-CFB 프레임의 7개 경계 크기 roundtrip, 길이·키·IV 검증 및 CHECKIN 회귀 테스트 성공
 - **참고사항:** 기존 GCM 가설과 달리 CFB에는 인증 태그가 없어 암호문 변조를 탐지하지 못함. 테스트에서 변조된 평문 반환 특성을 확인
 
-## Task A-6: 인증 (email+password) ⬜
-- **상태:** ⬜ 미완료
+## Task A-6: 인증 (email+password) 🔄
+- **상태:** 🔄 실인증 검증 대기
 - **완료 시간:** -
-- **산출물:** -
-- **결과 요약:** -
-- **참고사항:** -
+- **산출물:** `poc/03-loginlist/auth.ts`, `poc/03-loginlist/auth-test.ts`, `poc/03-loginlist/package.json`
+- **결과 요약:** X-VC 계산, POST 폼, bigint userId, 토큰 메모리 전용 처리, 응답 크기 제한 및 mock 인증 테스트 완료
+- **참고사항:** 엔드포인트 POST 지원 확인. `KAKAO_EMAIL`, `KAKAO_PASSWORD`, `KAKAO_DEVICE_UUID`가 현재 환경에 없어 Access Token 실발급은 미수행
 
 ## Task A-7: LOGINLIST → 세션 수립 ⬜ 🚨 Go/No-Go
 - **상태:** ⬜ 미완료

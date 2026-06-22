@@ -1,0 +1,20 @@
+{
+  "name": "03-loginlist",
+  "version": "1.0.0",
+  "description": "Kakao internal authentication feasibility tests",
+  "scripts": {
+    "auth": "tsx auth.ts",
+    "test": "tsx auth-test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "UNLICENSED",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^26.0.0",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3"
+  }
+}

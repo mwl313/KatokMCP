@@ -23,7 +23,7 @@
 | Booking | `booking-loco.kakao.com` | 443 | TLS over TCP | 🟢 |
 | Checkin | `ticket-loco.kakao.com` | 995 | TCP | 🟢 |
 | LOCO Server | 동적 (Booking 응답) | 동적 | TCP (AES 암호화) | 🟡 |
-| Kakao Auth | `accounts.kakao.com` | 443 | HTTPS | ⚠️ |
+| Kakao Auth | `katalk.kakao.com` | 443 | HTTPS | 🔵 |
 
 ---
 
@@ -256,13 +256,20 @@ Interval: 30초
 ## 7. 인증: email+password 방식
 
 ```
-1. POST https://accounts.kakao.com/... 으로 로그인
-2. X-VC 헤더 필요 (기기 식별자 기반 해시) ⚠️
-3. Access Token + Refresh Token 획득
-4. Access Token을 LOGINLIST BSON에 포함하여 LOCO 인증
+POST https://katalk.kakao.com/win32/account/login.json
+Content-Type: application/x-www-form-urlencoded
+User-Agent: KT/{app_version} Wd/{windows_version} {language}
+A: win32/{app_version}/{language}
+X-VC: SHA-512("JAYDEN|{user_agent}|JAYMOND|{email}|{device_uuid}")[0..8] hex
+
+Form:
+  device_name, device_uuid, email, password, forced=false
+
+Response:
+  status, userId, access_token, refresh_token, token_type, ...
 ```
 
-**⚠️ X-VC 헤더 계산 방식이 불확실. 카카오톡 앱 리버싱 or QR 로그인으로 우회 가능성 검토.**
+**상태:** 🔵 KiwiTalk 구현에서 확인하고 X-VC known vector 및 요청 mock 검증 완료. 실계정 토큰 발급은 환경변수 부재로 대기 중.
 
 ---
 
