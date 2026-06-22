@@ -270,11 +270,18 @@ Response:
 
 New device (`status=-100`):
   구형 /request_passcode.json 및 /register_device.json은 현재 404
-  공식 Windows 클라이언트의 등록 UUID는
-  HKCU/Software/Kakao/KakaoTalk/DeviceInfo/*/sys_uuid 에서 확인 가능
+  HKCU/.../DeviceInfo/*/sys_uuid는 서버 등록 device_uuid가 아님
+
+Current Android subdevice approval flow:
+  Agent: android, model: SM-X930 (allowlist 확인)
+  X-VC: SHA-512("BARD|{user_agent}|DANTE|{email}|SIAN")[0..8] hex
+  POST /android/account/passcodeLogin/generate
+  사용자가 KakaoTalk 앱에 서버 발급 passcode 입력
+  POST /android/account/passcodeLogin/registerDevice polling
+  POST /android/account/login.json
 ```
 
-**상태:** 🔵 로그인 구현 및 요청 mock 검증 완료. 임의 UUID에서 `-100` 확인, 공식 클라이언트 UUID 재사용 검증 대기 중.
+**상태:** 🔵 Windows 로그인과 Android 승인 흐름 구현 및 mock 검증 완료. Android endpoint/allowlist 라이브 확인, 실제 기기 등록은 사용자 동의 대기 중.
 
 ---
 

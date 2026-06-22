@@ -1,6 +1,6 @@
 # STATUS.md — Phase A 진행 현황
 
-> 마지막 업데이트: 2026-06-22 16:40
+> 마지막 업데이트: 2026-06-22 16:58
 > 각 Task 완료/실패 시 아래 표를 채우고 `git commit && git push`
 
 ---
@@ -43,9 +43,9 @@
 ## Task A-6: 인증 (email+password) 🔄
 - **상태:** 🔄 실인증 검증 대기
 - **완료 시간:** -
-- **산출물:** `poc/03-loginlist/auth.ts`, `poc/03-loginlist/auth-test.ts`, `poc/03-loginlist/package.json`
-- **결과 요약:** X-VC 계산, bigint userId, 토큰 메모리 전용 처리, 응답 크기 제한과 Base64/현재 Windows UUID mock 테스트 완료
-- **참고사항:** 임의 UUID는 -100(DEVICE_NOT_REGISTERED). 구형 passcode endpoint는 현재 404. 공식 클라이언트의 등록 `DeviceInfo/*/sys_uuid` 재사용 검증 대기
+- **산출물:** `poc/03-loginlist/auth.ts`, `poc/03-loginlist/android-auth.ts`, `poc/03-loginlist/auth-test.ts`, `poc/03-loginlist/android-auth-test.ts`, `poc/03-loginlist/package.json`
+- **결과 요약:** Windows 로그인 `-100` 원인 분리 및 현재 Android 보조기기 passcode 승인 흐름 구현. X-VC, allowlist, 등록 polling, bigint userId와 토큰 메모리 전용 처리 테스트 완료
+- **참고사항:** `sys_uuid`는 Kakao 등록 device UUID가 아님. Windows 구형 등록 endpoint는 404. Android `passcodeLogin/*` endpoint와 `SM-X930` allowlist는 라이브 확인했으며 실제 등록은 사용자 명시 동의 대기
 
 ## Task A-7: LOGINLIST → 세션 수립 ⬜ 🚨 Go/No-Go
 - **상태:** ⬜ 미완료

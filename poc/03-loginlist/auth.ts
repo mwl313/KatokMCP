@@ -119,7 +119,7 @@ export function parseLoginResponse(responseText: string): AuthResult {
   };
 }
 
-async function readBoundedResponse(response: Response): Promise<string> {
+export async function readBoundedResponse(response: Response): Promise<string> {
   const contentLength = Number(response.headers.get("content-length"));
   if (Number.isFinite(contentLength) && contentLength > MAX_RESPONSE_SIZE) {
     throw new Error("Kakao authentication response exceeds the size limit");
