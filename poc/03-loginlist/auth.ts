@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { pathToFileURL } from "node:url";
 
-const AUTH_URL = "https://katalk.kakao.com/win32/account/login.json";
+const AUTH_BASE_URL = "https://katalk.kakao.com/win32/account/";
 const XVC_FIRST_SEED = "JAYDEN";
 const XVC_SECOND_SEED = "JAYMOND";
 const MAX_RESPONSE_SIZE = 1024 * 1024;
@@ -28,6 +28,8 @@ export interface AuthResult {
   refreshToken: string;
   tokenType: string;
 }
+
+type AuthFormValue = string | undefined;
 
 export class AuthApiError extends Error {
   constructor(readonly status: number) {
@@ -119,6 +121,23 @@ export function parseLoginResponse(responseText: string): AuthResult {
   };
 }
 
+function parseStatusResponse(responseText: string): void {
+  if (responseText.length > MAX_RESPONSE_SIZE) {
+    throw new Error("Kakao authentication response exceeds the size limit");
+  }
+  const parsed: unknown = JSON.parse(responseText);
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error("Kakao authentication response is not an object");
+  }
+  const status = (parsed as Record<string, unknown>).status;
+  if (!Number.isInteger(status)) {
+    throw new Error("Kakao authentication response has no integer status");
+  }
+  if (status !== 0) {
+    throw new AuthApiError(status as number);
+  }
+}
+
 async function readBoundedResponse(response: Response): Promise<string> {
   const contentLength = Number(response.headers.get("content-length"));
   if (Number.isFinite(contentLength) && contentLength > MAX_RESPONSE_SIZE) {
@@ -153,10 +172,12 @@ async function readBoundedResponse(response: Response): Promise<string> {
   return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
 }
 
-export async function authenticate(
+async function postAuthForm(
+  endpoint: string,
   credentials: AuthCredentials,
+  extraForm: Record<string, AuthFormValue>,
   options: AuthOptions = {},
-): Promise<AuthResult> {
+): Promise<string> {
   requireNonEmpty(credentials.email, "email");
   requireNonEmpty(credentials.password, "password");
   validateDeviceUuid(credentials.deviceUuid);
@@ -177,13 +198,17 @@ export async function authenticate(
     device_uuid: credentials.deviceUuid,
     email: credentials.email,
     password: credentials.password,
-    forced: "false",
   });
+  for (const [name, value] of Object.entries(extraForm)) {
+    if (value !== undefined) {
+      form.set(name, value);
+    }
+  }
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const response = await (options.fetchImpl ?? fetch)(AUTH_URL, {
+    const response = await (options.fetchImpl ?? fetch)(new URL(endpoint, AUTH_BASE_URL), {
       method: "POST",
       headers: {
         "User-Agent": userAgent,
@@ -201,13 +226,47 @@ export async function authenticate(
       throw new Error(`Kakao authentication HTTP status ${response.status}`);
     }
 
-    return parseLoginResponse(await readBoundedResponse(response));
+    return await readBoundedResponse(response);
   } finally {
     clearTimeout(timer);
   }
 }
 
-function readCredentialsFromEnvironment(): AuthCredentials {
+export async function authenticate(
+  credentials: AuthCredentials,
+  options: AuthOptions = {},
+): Promise<AuthResult> {
+  return parseLoginResponse(await postAuthForm("login.json", credentials, { forced: "false" }, options));
+}
+
+export async function requestPasscode(
+  credentials: AuthCredentials,
+  options: AuthOptions = {},
+): Promise<void> {
+  parseStatusResponse(await postAuthForm("request_passcode.json", credentials, {}, options));
+}
+
+export async function registerDevice(
+  credentials: AuthCredentials,
+  passcode: string,
+  permanent = true,
+  options: AuthOptions = {},
+): Promise<void> {
+  requireNonEmpty(passcode, "passcode");
+  if (passcode.length > 20 || /\s/.test(passcode)) {
+    throw new TypeError("passcode must be at most 20 non-whitespace characters");
+  }
+  parseStatusResponse(
+    await postAuthForm(
+      "register_device.json",
+      credentials,
+      { passcode, permanent: String(permanent) },
+      options,
+    ),
+  );
+}
+
+export function readCredentialsFromEnvironment(): AuthCredentials {
   const email = process.env.KAKAO_EMAIL;
   const password = process.env.KAKAO_PASSWORD;
   const deviceUuid = process.env.KAKAO_DEVICE_UUID;

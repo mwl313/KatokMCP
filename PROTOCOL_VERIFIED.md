@@ -267,9 +267,14 @@ Form:
 
 Response:
   status, userId, access_token, refresh_token, token_type, ...
+
+New device flow (`status=-100`):
+  POST /win32/account/request_passcode.json
+  POST /win32/account/register_device.json (passcode, permanent=true)
+  POST /win32/account/login.json 재시도
 ```
 
-**상태:** 🔵 KiwiTalk 구현에서 확인하고 X-VC known vector 및 요청 mock 검증 완료. 실계정 토큰 발급은 환경변수 부재로 대기 중.
+**상태:** 🔵 KiwiTalk 구현 및 요청 mock 검증 완료. 실계정에서 `-100` 기기 미등록 응답 확인, passcode 등록 대기 중.
 
 ---
 
