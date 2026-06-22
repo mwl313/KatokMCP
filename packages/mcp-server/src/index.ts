@@ -35,6 +35,7 @@ import {
 } from "@kakao-mcp/loco-engine";
 import type { SessionConfig } from "@kakao-mcp/loco-engine";
 import { CredentialStore, storeCredentialsInteractive } from "./credential-store.js";
+import { globalRateLimiter, auditLogger, RateLimitError } from "./safety.js";
 
 // ─── State ────────────────────────────────────────────────────────────────
 
@@ -144,17 +145,22 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
+  const startTime = Date.now();
 
   try {
+    // Rate limiting
+    globalRateLimiter.consume(1);
+
+    let result: { content: { type: string; text: string }[] };
+
     switch (name) {
       case "kakao_list_chats": {
         const c = await ensureClient();
         const loginResp = c.getLoginListResponse();
         if (!loginResp) throw new Error("No login response available");
         const formatted = formatChatList(loginResp);
-        return {
-          content: [{ type: "text", text: formatted }],
-        };
+        result = { content: [{ type: "text", text: formatted }] };
+        break;
       }
 
       case "kakao_read_chat": {
@@ -164,7 +170,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const chatId = BigInt(chatIdStr);
         const count = Math.min(Math.max(1, Number(args?.count ?? 30)), 200);
 
-        // Get chat room info from login response to find max log id
         const loginResp = c.getLoginListResponse();
         let maxLogId = 0n;
         if (loginResp?.chatDatas) {
@@ -176,29 +181,56 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           }
         }
         if (maxLogId === 0n) {
-          return {
-            content: [{ type: "text", text: `Chat room #${chatIdStr} not found.` }],
-          };
+          result = { content: [{ type: "text", text: `Chat room #${chatIdStr} not found.` }] };
+          break;
         }
 
-        const result = await sendSyncMsgOn(c, {
+        const syncResult = await sendSyncMsgOn(c, {
           chatId,
-          cur: maxLogId - BigInt(count) * 10n, // Fetch a window
+          cur: maxLogId - BigInt(count) * 10n,
           max: maxLogId,
           cnt: count,
         });
-        const formatted = formatMessages(result);
-        return {
-          content: [{ type: "text", text: formatted || "No messages found." }],
-        };
+        const formatted = formatMessages(syncResult);
+        result = { content: [{ type: "text", text: formatted || "No messages found." }] };
+        break;
       }
 
       default:
         throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
     }
+
+    // Audit log
+    await auditLogger.record({
+      timestamp: new Date().toISOString(),
+      tool: name,
+      userId: client?.auth?.userId?.toString(),
+      chatId: String(args?.chatId ?? ""),
+      params: (args as Record<string, unknown>) ?? {},
+      result: "success",
+      durationMs: Date.now() - startTime,
+    });
+
+    return result;
   } catch (error) {
+    const durationMs = Date.now() - startTime;
+
     if (error instanceof McpError) throw error;
+    if (error instanceof RateLimitError) {
+      throw new McpError(ErrorCode.InvalidRequest, error.message);
+    }
+
     const msg = error instanceof Error ? error.message : String(error);
+    await auditLogger.record({
+      timestamp: new Date().toISOString(),
+      tool: name,
+      userId: client?.auth?.userId?.toString(),
+      chatId: String(args?.chatId ?? ""),
+      params: (args as Record<string, unknown>) ?? {},
+      result: "error",
+      errorMessage: msg,
+      durationMs,
+    });
     throw new McpError(ErrorCode.InternalError, msg);
   }
 });
