@@ -5,5 +5,8 @@ dist/
 .env.local
 .env.*.local
 kakaoauth.env
-*.pem
+# pem 인증서 (단, assets/ 공개키는 추적)
+*.key
+*.cert
+!packages/loco-engine/assets/public-key.pem
 .kakao-mcp/
