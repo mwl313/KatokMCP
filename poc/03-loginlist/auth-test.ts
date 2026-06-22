@@ -5,8 +5,6 @@ import {
   buildUserAgent,
   computeXvc,
   parseLoginResponse,
-  registerDevice,
-  requestPasscode,
 } from "./auth.js";
 
 const deviceUuid = "WlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWg==";
@@ -49,26 +47,16 @@ assert.equal(requestForm.get("email"), "test@example.com");
 assert.equal(requestForm.get("password"), "fake-password");
 assert.equal(requestForm.get("forced"), "false");
 
-const deviceRequests: Request[] = [];
-const deviceFetch: typeof fetch = async (input, init) => {
-  deviceRequests.push(new Request(input, init));
-  return new Response('{"status":0}', { status: 200 });
-};
-const credentials = { email: "test@example.com", password: "fake-password", deviceUuid };
-await requestPasscode(credentials, { fetchImpl: deviceFetch });
-await registerDevice(credentials, "1234", true, { fetchImpl: deviceFetch });
-assert.equal(deviceRequests[0]?.url, "https://katalk.kakao.com/win32/account/request_passcode.json");
-assert.equal(deviceRequests[1]?.url, "https://katalk.kakao.com/win32/account/register_device.json");
-const registerForm = new URLSearchParams(await deviceRequests[1]?.text());
-assert.equal(registerForm.get("passcode"), "1234");
-assert.equal(registerForm.get("permanent"), "true");
-
 assert.throws(
   () => parseLoginResponse('{"status":12}'),
   (error: unknown) => error instanceof AuthApiError && error.status === 12,
 );
 assert.throws(() => parseLoginResponse('{"status":0,"userId":1}'), /access token/);
 assert.throws(() => computeXvc("invalid", userAgent, "test@example.com"), /deviceUuid/);
+assert.equal(
+  computeXvc("123e4567-e89b-12d3-a456-426614174000", userAgent, "test@example.com"),
+  "81aa17b58de2661d",
+);
 
 await assert.rejects(
   authenticate(
@@ -83,4 +71,4 @@ console.log("Authentication request shape: OK");
 console.log("64-bit userId and token parsing: OK");
 console.log("Sanitized API error handling: OK");
 console.log("Bounded response streaming: OK");
-console.log("Device registration request flow: OK");
+console.log("Current Windows UUID format: OK");

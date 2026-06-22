@@ -43,9 +43,9 @@
 ## Task A-6: 인증 (email+password) 🔄
 - **상태:** 🔄 실인증 검증 대기
 - **완료 시간:** -
-- **산출물:** `poc/03-loginlist/auth.ts`, `poc/03-loginlist/device-auth.ts`, `poc/03-loginlist/auth-test.ts`, `poc/03-loginlist/package.json`
-- **결과 요약:** X-VC 계산, 로그인 및 passcode 기기 등록 흐름, bigint userId, 토큰 메모리 전용 처리, 응답 크기 제한과 mock 테스트 완료
-- **참고사항:** 실로그인에서 -100(DEVICE_NOT_REGISTERED) 확인. 동일 UUID로 passcode 요청 및 영구 기기 등록 후 재로그인 필요
+- **산출물:** `poc/03-loginlist/auth.ts`, `poc/03-loginlist/auth-test.ts`, `poc/03-loginlist/package.json`
+- **결과 요약:** X-VC 계산, bigint userId, 토큰 메모리 전용 처리, 응답 크기 제한과 Base64/현재 Windows UUID mock 테스트 완료
+- **참고사항:** 임의 UUID는 -100(DEVICE_NOT_REGISTERED). 구형 passcode endpoint는 현재 404. 공식 클라이언트의 등록 `DeviceInfo/*/sys_uuid` 재사용 검증 대기
 
 ## Task A-7: LOGINLIST → 세션 수립 ⬜ 🚨 Go/No-Go
 - **상태:** ⬜ 미완료

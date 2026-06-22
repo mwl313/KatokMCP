@@ -29,8 +29,6 @@ export interface AuthResult {
   tokenType: string;
 }
 
-type AuthFormValue = string | undefined;
-
 export class AuthApiError extends Error {
   constructor(readonly status: number) {
     super(`Kakao authentication failed with API status ${status}`);
@@ -46,12 +44,12 @@ function requireNonEmpty(value: string, name: string): void {
 
 function validateDeviceUuid(deviceUuid: string): void {
   requireNonEmpty(deviceUuid, "deviceUuid");
-  if (!/^[A-Za-z0-9+/]{86}==$/.test(deviceUuid)) {
-    throw new TypeError("deviceUuid must be canonical base64 for 64 bytes");
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(deviceUuid)) {
+    return;
   }
   const decoded = Buffer.from(deviceUuid, "base64");
   if (decoded.length !== 64 || decoded.toString("base64") !== deviceUuid) {
-    throw new TypeError("deviceUuid must decode to exactly 64 bytes");
+    throw new TypeError("deviceUuid must be a standard UUID or canonical base64 for 64 bytes");
   }
 }
 
@@ -121,23 +119,6 @@ export function parseLoginResponse(responseText: string): AuthResult {
   };
 }
 
-function parseStatusResponse(responseText: string): void {
-  if (responseText.length > MAX_RESPONSE_SIZE) {
-    throw new Error("Kakao authentication response exceeds the size limit");
-  }
-  const parsed: unknown = JSON.parse(responseText);
-  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-    throw new Error("Kakao authentication response is not an object");
-  }
-  const status = (parsed as Record<string, unknown>).status;
-  if (!Number.isInteger(status)) {
-    throw new Error("Kakao authentication response has no integer status");
-  }
-  if (status !== 0) {
-    throw new AuthApiError(status as number);
-  }
-}
-
 async function readBoundedResponse(response: Response): Promise<string> {
   const contentLength = Number(response.headers.get("content-length"));
   if (Number.isFinite(contentLength) && contentLength > MAX_RESPONSE_SIZE) {
@@ -175,7 +156,7 @@ async function readBoundedResponse(response: Response): Promise<string> {
 async function postAuthForm(
   endpoint: string,
   credentials: AuthCredentials,
-  extraForm: Record<string, AuthFormValue>,
+  extraForm: Record<string, string>,
   options: AuthOptions = {},
 ): Promise<string> {
   requireNonEmpty(credentials.email, "email");
@@ -237,33 +218,6 @@ export async function authenticate(
   options: AuthOptions = {},
 ): Promise<AuthResult> {
   return parseLoginResponse(await postAuthForm("login.json", credentials, { forced: "false" }, options));
-}
-
-export async function requestPasscode(
-  credentials: AuthCredentials,
-  options: AuthOptions = {},
-): Promise<void> {
-  parseStatusResponse(await postAuthForm("request_passcode.json", credentials, {}, options));
-}
-
-export async function registerDevice(
-  credentials: AuthCredentials,
-  passcode: string,
-  permanent = true,
-  options: AuthOptions = {},
-): Promise<void> {
-  requireNonEmpty(passcode, "passcode");
-  if (passcode.length > 20 || /\s/.test(passcode)) {
-    throw new TypeError("passcode must be at most 20 non-whitespace characters");
-  }
-  parseStatusResponse(
-    await postAuthForm(
-      "register_device.json",
-      credentials,
-      { passcode, permanent: String(permanent) },
-      options,
-    ),
-  );
 }
 
 export function readCredentialsFromEnvironment(): AuthCredentials {

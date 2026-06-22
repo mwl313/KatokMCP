@@ -4,8 +4,6 @@
   "description": "Kakao internal authentication feasibility tests",
   "scripts": {
     "auth": "tsx auth.ts",
-    "register-device": "tsx device-auth.ts register",
-    "request-passcode": "tsx device-auth.ts request",
     "test": "tsx auth-test.ts",
     "typecheck": "tsc --noEmit"
   },

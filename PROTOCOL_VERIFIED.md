@@ -268,13 +268,13 @@ Form:
 Response:
   status, userId, access_token, refresh_token, token_type, ...
 
-New device flow (`status=-100`):
-  POST /win32/account/request_passcode.json
-  POST /win32/account/register_device.json (passcode, permanent=true)
-  POST /win32/account/login.json 재시도
+New device (`status=-100`):
+  구형 /request_passcode.json 및 /register_device.json은 현재 404
+  공식 Windows 클라이언트의 등록 UUID는
+  HKCU/Software/Kakao/KakaoTalk/DeviceInfo/*/sys_uuid 에서 확인 가능
 ```
 
-**상태:** 🔵 KiwiTalk 구현 및 요청 mock 검증 완료. 실계정에서 `-100` 기기 미등록 응답 확인, passcode 등록 대기 중.
+**상태:** 🔵 로그인 구현 및 요청 mock 검증 완료. 임의 UUID에서 `-100` 확인, 공식 클라이언트 UUID 재사용 검증 대기 중.
 
 ---
 
