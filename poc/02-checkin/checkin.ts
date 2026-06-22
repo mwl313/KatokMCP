@@ -4,12 +4,8 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import net from "node:net";
 import { BSON, Long, type Document } from "bson";
 import { decodeHeader, encodeHeader, LOCO_HEADER_SIZE } from "../01-booking/header.js";
-import {
-  createHandshake,
-  decryptSecureFrame,
-  encryptSecureFrame,
-  SECURE_FRAME_HEADER_SIZE,
-} from "./handshake.js";
+import { decryptLocoFrame, encryptLocoFrame, SECURE_FRAME_HEADER_SIZE } from "./aes.js";
+import { createHandshake } from "./handshake.js";
 
 const HOST = "ticket-loco.kakao.com";
 const PORT = 995;
@@ -38,7 +34,7 @@ const requestBody = Buffer.from(
   }),
 );
 const requestPacket = encodeHeader(1, "CHECKIN", 0, requestBody);
-const requestFrame = encryptSecureFrame(requestPacket, sessionKey);
+const requestFrame = encryptLocoFrame(requestPacket, sessionKey);
 let receivedBytes = Buffer.alloc(0);
 
 function readSecureFrame(socket: net.Socket): Promise<Buffer> {
@@ -143,7 +139,7 @@ async function main(): Promise<void> {
     const responsePromise = readSecureFrame(socket);
     socket.write(Buffer.concat([handshake, requestFrame]));
     const responseFrame = await responsePromise;
-    const responsePacket = decryptSecureFrame(responseFrame, sessionKey);
+    const responsePacket = decryptLocoFrame(responseFrame, sessionKey);
 
     if (responsePacket.length < LOCO_HEADER_SIZE) {
       throw new Error("decrypted CHECKIN response is shorter than a LOCO header");

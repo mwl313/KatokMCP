@@ -4,7 +4,7 @@
   "description": "LOCO checkin protocol feasibility tests",
   "scripts": {
     "checkin": "tsx checkin.ts",
-    "test": "tsx rsa-test.ts && tsx handshake-test.ts",
+    "test": "tsx rsa-test.ts && tsx handshake-test.ts && tsx aes-test.ts",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],

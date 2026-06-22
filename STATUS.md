@@ -1,6 +1,6 @@
 # STATUS.md — Phase A 진행 현황
 
-> 마지막 업데이트: 2026-06-22 16:03
+> 마지막 업데이트: 2026-06-22 16:10
 > 각 Task 완료/실패 시 아래 표를 채우고 `git commit && git push`
 
 ---
@@ -33,12 +33,12 @@
 - **결과 요약:** `ticket-loco.kakao.com:995`에서 RSA-OAEP SHA-1 핸드셰이크, AES-128-CFB CHECKIN 요청/응답 복호화 및 LOCO 서버 할당 성공
 - **참고사항:** 라이브 GETCONF와 원본 구현 및 실서버 검증 결과는 `key_encrypt_type=15`, `encrypt_type=2`. `appVer=3.4.7`은 -999(업그레이드 필요), 현재 `26.5.0`은 성공
 
-## Task A-5: AES-128-GCM 암복호화 ⬜
-- **상태:** ⬜ 미완료
-- **완료 시간:** -
-- **산출물:** -
-- **결과 요약:** -
-- **참고사항:** -
+## Task A-5: AES-128-CFB 암복호화 ✅
+- **상태:** ✅ 완료
+- **완료 시간:** 2026-06-22 16:10
+- **산출물:** `poc/02-checkin/aes.ts`, `poc/02-checkin/aes-test.ts`
+- **결과 요약:** 실제 LOCO AES-128-CFB 프레임의 7개 경계 크기 roundtrip, 길이·키·IV 검증 및 CHECKIN 회귀 테스트 성공
+- **참고사항:** 기존 GCM 가설과 달리 CFB에는 인증 태그가 없어 암호문 변조를 탐지하지 못함. 테스트에서 변조된 평문 반환 특성을 확인
 
 ## Task A-6: 인증 (email+password) ⬜
 - **상태:** ⬜ 미완료

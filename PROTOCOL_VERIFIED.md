@@ -101,6 +101,9 @@ Offset  Size  Type    Field             Value
 | OAEP 해시 / MGF1 | **SHA-1 / SHA-1** | 🟢 |
 | AES 키 길이 | 128 bits (16 bytes) | 🟢 |
 | CFB IV | 16 bytes random (매 프레임 새로) | 🟢 |
+| 무결성 인증 | 없음 (인증 태그 없음) | 🟢 |
+
+**보안 특성:** AES-CFB 프레임은 암호문 변조를 자체 탐지하지 못한다. 변조된 프레임도 복호화되며 변경된 평문을 반환한다.
 
 ### 4.3 암호화 프레임
 
