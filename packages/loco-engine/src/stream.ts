@@ -1,27 +1,18 @@
 /**
- * Phase E-1: LOCO Stream — 서버 푸시 메시지 처리
- * 
+ * Phase E-1: LOCO Stream — 서버 푸시 메시지 처리 (Event 기반)
+ *
  * LOGINLIST 이후 LOCO 서버는 요청 없이도 다양한 이벤트를 푸시합니다:
  * - "MSG": 새 메시지 도착
  * - "KICKOUT": 중복 로그인
  * - "CHANGESVR": 서버 변경
- * - "DECUNREAD": 읽음 처리
  * - "LEFT", "NEWMEM", "DELMEM": 채팅방 멤버 변동
- * - "SYNCDLMSG": 메시지 삭제
- * 
- * 구현 방식:
- * - LocoConnection의 raw socket에서 data 이벤트를 리스닝
- * - command()가 응답을 기다리는 동안 도착한 데이터는 command()가 소비
- * - command()가 대기 중이 아닐 때 도착한 데이터 = push 이벤트 → 버퍼링
- * - pollLoop()가 버퍼를 주기적으로 읽어서 push 이벤트로 변환
+ *
+ * v3 개선: Polling → Event 기반 (connection.ts onPushData 사용)
  */
 
 import { BSON, type Document } from "bson";
 import { LocoConnection } from "./connection.js";
-import { SECURE_FRAME_HEADER_SIZE, decryptLocoFrame } from "./crypto/aes.js";
 import type { LocoServerInfo } from "./auth/types.js";
-
-// ─── Stream Event Types ──────────────────────────────────────────────────
 
 export interface NewMessageEvent {
   type: "MSG";
@@ -31,86 +22,40 @@ export interface NewMessageEvent {
   message: string;
   logId: bigint;
 }
-
-export interface KickoutEvent {
-  type: "KICKOUT";
-}
-
-export interface ServerChangeEvent {
-  type: "CHANGESVR";
-  newServer: LocoServerInfo;
-}
-
-export interface MemberUpdateEvent {
-  type: "NEWMEM" | "DELMEM" | "LEFT";
-  chatId: bigint;
-  userIds: bigint[];
-}
-
-export interface UnknownEvent {
-  type: "UNKNOWN";
-  method: string;
-  data: Document;
-}
-
+export interface KickoutEvent { type: "KICKOUT"; }
+export interface ServerChangeEvent { type: "CHANGESVR"; newServer: LocoServerInfo; }
+export interface MemberUpdateEvent { type: "NEWMEM" | "DELMEM" | "LEFT"; chatId: bigint; userIds: bigint[]; }
+export interface UnknownEvent { type: "UNKNOWN"; method: string; data: Document; }
 export type StreamEvent = NewMessageEvent | KickoutEvent | ServerChangeEvent | MemberUpdateEvent | UnknownEvent;
 export type StreamCallback = (event: StreamEvent) => void;
 
-// ─── Stream Reader ────────────────────────────────────────────────────────
-
-/**
- * Reads push messages from a LOCO connection.
- * Must be started after LOGINLIST, on the same connection.
- * 
- * The LocoConnection stores push data that arrives when no command() is active.
- * StreamReader polls this buffer and dispatches events to callbacks.
- */
+/** Event-driven StreamReader — fires callbacks immediately when push data arrives */
 export class StreamReader {
   private conn: LocoConnection;
   private running = false;
   private callbacks: StreamCallback[] = [];
 
-  constructor(conn: LocoConnection) {
-    this.conn = conn;
-  }
+  constructor(conn: LocoConnection) { this.conn = conn; }
 
-  onEvent(callback: StreamCallback): void {
-    this.callbacks.push(callback);
-  }
+  onEvent(callback: StreamCallback): void { this.callbacks.push(callback); }
+  offEvent(callback: StreamCallback): void { this.callbacks = this.callbacks.filter((cb) => cb !== callback); }
 
-  offEvent(callback: StreamCallback): void {
-    this.callbacks = this.callbacks.filter((cb) => cb !== callback);
-  }
-
-  /** Start polling for push data */
-  start(intervalMs = 1000): void {
+  /** Start listening — registers event-driven callback on connection */
+  start(): void {
     if (this.running) return;
     this.running = true;
-    this.pollLoop(intervalMs);
-  }
-
-  stop(): void {
-    this.running = false;
-  }
-
-  private async pollLoop(intervalMs: number): Promise<void> {
-    while (this.running) {
-      try {
-        const pushData = this.conn.readPushBuffer();
-        if (pushData && pushData.length > 0) {
-          for (const packet of pushData) {
-            const event = this.parsePacket(packet);
-            if (event) {
-              for (const cb of this.callbacks) {
-                try { cb(event); } catch { /* ignore */ }
-              }
-            }
-          }
+    this.conn.onPushData((frames: Buffer[]) => {
+      if (!this.running) return;
+      for (const plaintext of frames) {
+        const event = this.parsePacket(plaintext);
+        if (event) {
+          for (const cb of this.callbacks) { try { cb(event); } catch { /* ignore */ } }
         }
-      } catch { /* ignore polling errors */ }
-      await new Promise((r) => setTimeout(r, intervalMs));
-    }
+      }
+    });
   }
+
+  stop(): void { this.running = false; }
 
   private parsePacket(packet: Buffer): StreamEvent | null {
     try {
@@ -124,9 +69,7 @@ export class StreamReader {
       const body = packet.subarray(4 + 22, fullSize);
       const data = BSON.deserialize(body) as Document;
       return this.parseCommand(method, data);
-    } catch {
-      return null;
-    }
+    } catch { return null; }
   }
 
   private parseCommand(method: string, data: Document): StreamEvent {

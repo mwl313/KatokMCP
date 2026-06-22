@@ -4,6 +4,7 @@
  * Uses LocoConnection to maintain a single TCP connection for multiple commands.
  */
 
+import { EventEmitter } from "node:events";
 import { randomBytes } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { sendPing } from "./commands.js";
@@ -24,7 +25,6 @@ export interface SessionConfig {
   publicKey?: string;
 }
 
-/** Perform CHECKIN to get LOCO server assignment (creates its own temp connection) */
 export async function checkin(sessionKey: Buffer, auth: AuthResult, publicKey: string, appVer: string): Promise<{ host: string; port: number; csport: number }> {
   const socket = await connectSocket({ host: TICKET_HOST, port: TICKET_PORT });
   try {
@@ -41,14 +41,15 @@ export async function checkin(sessionKey: Buffer, auth: AuthResult, publicKey: s
   } finally { socket.destroy(); }
 }
 
-/** LocoSession with a persistent connection for multiple commands */
-export class LocoClient {
+export class LocoClient extends EventEmitter {
   public readonly sessionKey: Buffer;
   public readonly auth: AuthResult;
   public readonly locoServer: { host: string; port: number; csport: number };
   public readonly appVer: string;
   private conn: LocoConnection;
   private _loginListResponse: Document | null = null;
+  private pingInterval?: ReturnType<typeof setInterval>;
+  private pingFailCount = 0;
 
   private constructor(
     auth: AuthResult,
@@ -57,6 +58,7 @@ export class LocoClient {
     conn: LocoConnection,
     appVer: string,
   ) {
+    super();
     this.auth = auth;
     this.locoServer = locoServer;
     this.sessionKey = sessionKey;
@@ -64,7 +66,6 @@ export class LocoClient {
     this.appVer = appVer;
   }
 
-  /** Establish a full session: auth → CHECKIN → LOGINLIST → persistent connection */
   static async connect(config: SessionConfig): Promise<LocoClient> {
     const appVer = config.appVersion ?? "25.9.2";
     const publicKey = config.publicKey ?? await readFile(
@@ -72,16 +73,12 @@ export class LocoClient {
     );
     const deviceUuid = process.env.KAKAO_ANDROID_DEVICE_UUID ?? "0000000000000000000000000000000000000000000000000000000000000000";
 
-    // CHECKIN (ticket server — separate temp connection)
     const sessionKey = randomBytes(16);
     try {
       const locoServer = await checkin(sessionKey, config.auth, publicKey, appVer);
-
-      // Persistent connection to LOCO server
       const conn = new LocoConnection(locoServer.host, locoServer.port, publicKey);
       await conn.connect();
 
-      // LOGINLIST on the persistent connection
       const body = Buffer.from(BSON.serialize({
         os: "android", ntype: 0, appVer, MCCMNC: "999", prtVer: "1",
         duuid: deviceUuid, oauthToken: config.auth.accessToken, lang: "ko",
@@ -103,46 +100,39 @@ export class LocoClient {
     }
   }
 
-  /** Get the LOGINLIST response (chat room data) */
-  getLoginListResponse(): Document | null {
-    return this._loginListResponse;
-  }
+  getLoginListResponse(): Document | null { return this._loginListResponse; }
+  getConnection(): LocoConnection { return this.conn; }
 
-  /** Get the underlying connection for direct command access */
-  getConnection(): LocoConnection {
-    return this.conn;
-  }
-
-  /** Send a raw LOCO command on the persistent connection (e.g. LCHATLIST, SYNCMSG) */
   async sendRaw(method: string, body: Buffer): Promise<Document> {
     const packet = encodeHeader(1, method, 0, body);
     const response = await this.conn.command(packet);
     if (response.length < LOCO_HEADER_SIZE) throw new Error(`${method} response too short`);
     const decoded = BSON.deserialize(response.subarray(LOCO_HEADER_SIZE)) as Document;
-    if (decoded.status !== 0 && decoded.status !== undefined) {
-      throw new Error(`${method} status ${String(decoded.status)}`);
-    }
+    if (decoded.status !== 0 && decoded.status !== undefined) throw new Error(`${method} status ${String(decoded.status)}`);
     return decoded;
   }
 
-  /** Start Keep-Alive PING interval (default: 30s) */
-  private pingInterval?: ReturnType<typeof setInterval>;
-
   startKeepAlive(intervalMs = 30_000): void {
     this.stopKeepAlive();
-    this.pingInterval = setInterval(() => {
-      sendPing(this).catch(() => { /* ignore ping failures */ });
+    this.pingFailCount = 0;
+    this.pingInterval = setInterval(async () => {
+      try {
+        await sendPing(this);
+        this.pingFailCount = 0;
+      } catch {
+        this.pingFailCount++;
+        if (this.pingFailCount >= 3) {
+          this.emit("connection_lost");
+        }
+      }
     }, intervalMs);
   }
 
   stopKeepAlive(): void {
-    if (this.pingInterval) {
-      clearInterval(this.pingInterval);
-      this.pingInterval = undefined;
-    }
+    if (this.pingInterval) { clearInterval(this.pingInterval); this.pingInterval = undefined; }
+    this.pingFailCount = 0;
   }
 
-  /** Close the persistent connection */
   close(): void {
     this.stopKeepAlive();
     this.conn.close();
