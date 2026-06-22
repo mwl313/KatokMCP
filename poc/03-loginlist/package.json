@@ -5,6 +5,7 @@
   "scripts": {
     "auth": "tsx auth.ts",
     "auth-android-register": "tsx android-auth.ts",
+    "loginlist": "tsx loginlist.ts",
     "test": "tsx auth-test.ts && tsx android-auth-test.ts",
     "typecheck": "tsc --noEmit"
   },
@@ -17,5 +18,8 @@
     "@types/node": "^26.0.0",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "bson": "^7.3.0"
   }
 }
