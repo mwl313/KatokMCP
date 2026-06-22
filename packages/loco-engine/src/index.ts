@@ -85,15 +85,22 @@ export {
   LocoConnection,
 } from "./connection.js";
 
-// Command Modules (B-5 + B-6)
+// Command Modules (B-5 + B-6 + C-1 + C-2)
 export {
   sendLchatListOn,
   sendSyncMsgOn,
+  sendWrite,
+  sendDeleteMsg,
   sendPing,
   getChatId,
   getMessageText,
 } from "./commands.js";
-export type { LchatListRequest, SyncMsgRequest } from "./commands.js";
+export type {
+  LchatListRequest,
+  SyncMsgRequest,
+  WriteRequest,
+  DeleteMsgRequest,
+} from "./commands.js";
 
 // Error Handling + Retry (B-7)
 export {
