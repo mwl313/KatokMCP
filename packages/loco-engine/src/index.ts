@@ -90,3 +90,18 @@ export {
   getMessageText,
 } from "./commands.js";
 export type { LchatListRequest, SyncMsgRequest } from "./commands.js";
+
+// Error Handling + Retry (B-7)
+export {
+  LocoError,
+  classifyError,
+  isLocoError,
+  withRetry,
+  SessionManager,
+  detectChangesvr,
+  isKickout,
+  calculateDelay,
+  sleep,
+  DEFAULT_RETRY_CONFIG,
+} from "./error.js";
+export type { LocoErrorCode, RetryConfig, SessionManagerConfig } from "./error.js";
