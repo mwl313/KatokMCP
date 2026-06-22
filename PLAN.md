@@ -285,24 +285,27 @@ Stage 3: Login     🟢  LOCO Server (동적 IP) → LOGINLIST → 세션 수립
 | A-5 | AES-128-CFB 암복호화 검증 | ✅ |
 | A-6 | 인증: Android passcode 승인 | ✅ |
 | A-7 | LOGINLIST → 세션 수립 | ✅ **🚀** |
-| A-8 | LCHATLIST → 채팅방 목록 | ⬜ |
-| A-9 | SYNCMSG → 메시지 읽기 | ⬜ |
+| A-8 | LCHATLIST → 채팅방 목록 | ✅ |
+| A-9 | SYNCMSG → 메시지 읽기 | ✅ |
 
-### Phase B: LOCO Engine 코어
+### Phase B: LOCO Engine 코어 ✅
 
-**기간:** 3~4주
+**상태:** **완료** 🎉
+**기간:** 3~4주 → 1일 (실제)
 **전제:** Phase A 통과 ✅
 **목표:** 재사용 가능한 LOCO 클라이언트 라이브러리
+**산출물:** `packages/loco-engine/`
 
-| # | 작업 |
-|---|------|
-| B-1 | Transport Layer (Booking → Checkin → Connection) |
-| B-2 | Crypto Layer (RSA, AES, Handshake) |
-| B-3 | Protocol Layer (Header, BSON, Method Router) |
-| B-4 | Auth Module (Login, Token, Session) |
-| B-5 | Command Module (LCHATLIST, SYNCMSG) |
-| B-6 | Keep-Alive (PING 30s) |
-| B-7 | 에러 처리 + 재연결 (exponential backoff) |
+| # | 작업 | 상태 |
+|---|------|:----:|
+| B-1 | Transport Layer (TCP + AES 프레임) | ✅ |
+| B-2 | Crypto Layer (RSA 핸드셰이크 + AES-128-CFB) | ✅ |
+| B-3 | Protocol Layer (22-byte Header + BSON) | ✅ |
+| B-4 | Auth Module (Windows/Android 인증 + Session) | ✅ |
+| B-5 | Command Module (LCHATLIST, SYNCMSG) | ✅ |
+| B-6 | Keep-Alive (PING 30s) | ✅ |
+| B-7 | Error Handling (LocoError, SessionManager, retry) | ✅ |
+| — | Persistent Connection (LocoConnection, LocoClient) | ✅ |
 
 ### Phase C: 메시지 전송 (v0.2 범위)
 
@@ -316,16 +319,19 @@ Stage 3: Login     🟢  LOCO Server (동적 IP) → LOGINLIST → 세션 수립
 | C-4 | 친구 목록 / 프로필 |
 | C-5 | Safety Layer (Rate Limiter, Prefixer, Audit Log) |
 
-### Phase D: MCP 서버 래핑 (v0.1 대상 기능만)
+### Phase D: MCP 서버 래핑 (v0.1) 🔄
 
-**기간:** 1주
+**상태:** **진행 중 (70%)**
+**기간:** 예상 1주
+**산출물:** `packages/mcp-server/`
 
-| # | 작업 |
-|---|------|
-| D-1 | StdioServerTransport 기본 구조 |
-| D-2 | Read-Only Tools (list_chats, read_chat) |
-| D-3 | Resources (kakao:// URI) |
-| D-4 | Credential Store (환경변수 + 로컬 암호화 저장) |
+| # | 작업 | 상태 |
+|---|------|:----:|
+| D-1 | StdioServerTransport 기본 구조 | ✅ |
+| D-2 | Read-Only Tools (kakao_list_chats, kakao_read_chat) | ✅ |
+| D-3 | Resources (kakao://chats, kakao://chat/{id}) | ✅ |
+| D-4 | Credential Store (환경변수 + 로컬 암호화 저장) | 🔜 진행 중 |
+| D-5 | Safety Layer (Rate Limiter, Audit Log) | ⬜ |
 
 ### Phase E: 실시간 + Daemon (v0.3)
 
