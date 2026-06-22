@@ -393,6 +393,24 @@ Phase A ──(통과)──▶ Phase B ──▶ Phase D (v0.1 MVP)
 
 환경변수 `KAKAO_ENV=development` → dev 모드. 기본값은 prod.
 
+## 7.2 배포 / 포트폴리오 (v0.2 이후 구체화)
+
+워킹 버전(v0.1)이 나오면 본격적으로 설계할 항목.
+
+| 항목 | 목표 |
+|------|------|
+| 설치는 `npx @kakao-mcp/server` 한 줄 | ✅ 이미 계획 완료 |
+| AI 연동은 설정 파일 복붙만으로 | ✅ 이미 계획 완료 |
+| **인증 UX 개선** (QR 로그인, CLI → 브라우저) | 🎯 워킹 버전 후 최우선 과제 |
+| 영문/한글 README + 스크린샷 + 데모 GIF | 🎯 배포 전 필수 |
+| GitHub Pages 랜딩 페이지 | 🎯 있으면 좋음 |
+| npm publish + CI/CD | 🎯 Phase F 표준 |
+
+**핵심 사용자 가치:**
+- 한국인이 가장 필요한 카톡 AI 자동화를 **크로스플랫폼**으로 제공
+- LOCO 프로토콜 리버싱 + 암호학 + TCP 네트워킹의 **기술적 깊이**
+- MCP 표준을 따르므로 **Claude/ChatGPT/Gemini/OpenClaw 어디서든 동작**
+
 ---
 
 ## 8. 기술 스택
