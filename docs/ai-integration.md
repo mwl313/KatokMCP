@@ -4,6 +4,21 @@
 
 ---
 
+## 설치 후 실행 (프로젝트 루트 기준)
+
+```bash
+# 1. 의존성 설치
+npm install
+
+# 2. 빌드
+npm run build
+
+# 3. MCP 서버 실행
+node packages/mcp-server/dist/index.js
+```
+
+---
+
 ## Claude Desktop
 
 `claude_desktop_config.json` 파일을 열고 `mcpServers`에 추가:
@@ -13,7 +28,7 @@
   "mcpServers": {
     "kakao": {
       "command": "node",
-      "args": ["C:\\KakaoMCP\\packages\\mcp-server\\dist\\index.js"],
+      "args": ["{{프로젝트경로}}/packages/mcp-server/dist/index.js"],
       "env": {
         "KAKAO_EMAIL": "your@email.com",
         "KAKAO_PASSWORD": "your_password",

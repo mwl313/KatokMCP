@@ -10,7 +10,6 @@
  */
 
 import net from "node:net";
-import { once } from "node:events";
 import { randomBytes } from "node:crypto";
 import { createHandshake } from "./crypto/handshake.js";
 import { encryptLocoFrame, decryptLocoFrame, SECURE_FRAME_HEADER_SIZE } from "./crypto/aes.js";
@@ -90,6 +89,12 @@ export class LocoConnection {
     const frameSize = 4 + payloadSize;
     if (this.responseBuffer.length >= frameSize) {
       const frame = this.responseBuffer.subarray(0, frameSize);
+      // Move remaining data to push buffer (TCP frame boundary)
+      const remainder = this.responseBuffer.subarray(frameSize);
+      this.responseBuffer = Buffer.alloc(0);
+      if (remainder.length > 0) {
+        this.pushBuffer.push(remainder);
+      }
       try {
         const plaintext = decryptLocoFrame(frame, this.sessionKey);
         this.resolveResponse(plaintext);
