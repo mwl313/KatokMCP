@@ -80,3 +80,13 @@ export {
   establishSession,
 } from "./session.js";
 export type { SessionConfig } from "./session.js";
+
+// Command Modules (B-5 + B-6)
+export {
+  sendLchatList,
+  sendSyncMsg,
+  sendPing,
+  getChatId,
+  getMessageText,
+} from "./commands.js";
+export type { LchatListRequest, SyncMsgRequest } from "./commands.js";
