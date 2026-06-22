@@ -1,0 +1,4 @@
+{
+  "status": -201,
+  "note": "A-8 LCHATLIST - 신규 에러 코드. KiwiTalk 기준 lastTokenId/lastChatId는 i64(Rust)여서 JS Long 타입 불일치 가능성. 또는 LOGINLIST가 이미 eof=true여서 추가 페이지가 없는데 요청을 보내서 발생. PROTOCOL_VERIFIED.md에 -201 코드 추가 필요."
+}
