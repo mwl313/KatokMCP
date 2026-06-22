@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "LOCO checkin protocol feasibility tests",
   "scripts": {
-    "test": "tsx rsa-test.ts",
+    "checkin": "tsx checkin.ts",
+    "test": "tsx rsa-test.ts && tsx handshake-test.ts",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],
@@ -15,5 +16,8 @@
     "@types/node": "^26.0.0",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "bson": "^7.3.0"
   }
 }

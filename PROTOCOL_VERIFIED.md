@@ -21,7 +21,7 @@
 | 용도 | 호스트 | 포트 | 프로토콜 | 상태 |
 |------|--------|------|----------|:----:|
 | Booking | `booking-loco.kakao.com` | 443 | TLS over TCP | 🟢 |
-| Checkin | `ticket-loco.kakao.com` | 995 | TCP | 🟡 |
+| Checkin | `ticket-loco.kakao.com` | 995 | TCP | 🟢 |
 | LOCO Server | 동적 (Booking 응답) | 동적 | TCP (AES 암호화) | 🟡 |
 | Kakao Auth | `accounts.kakao.com` | 443 | HTTPS | ⚠️ |
 
@@ -36,7 +36,8 @@ Stage 1: BOOKING
   
 Stage 2: CHECKIN
   Client → ticket-loco.kakao.com:995 (TCP)
-  268-byte 핸드셰이크 → LOCO 서버 IP/포트 + 세션 키
+  클라이언트가 생성한 세션 키를 포함한 268-byte 핸드셰이크
+  CHECKIN → LOCO 서버 IP/포트
 
 Stage 3: LOGIN
   Client → LOCO Server (동적 IP:Port) (TCP + AES)
@@ -81,50 +82,45 @@ Offset  Size  Type    Field         Description
 Offset  Size  Type    Field             Value
 ------  ----  ------  -----             -----
 0x00    4     u32 LE  key_size          256 (0x00000100)
-0x04    4     u32 LE  key_encrypt_type  16 (0x00000010) ← ⚠️ 15(0x0F) 아님!
-0x08    4     u32 LE  encrypt_type      3  (0x00000003) ← 3=GCM, 2=CFB 아님
+0x04    4     u32 LE  key_encrypt_type  15 (0x0000000F) = RSA OAEP SHA-1
+0x08    4     u32 LE  encrypt_type      2  (0x00000002) = AES-128-CFB
 0x0C    256   bytes   encrypted_key     RSA-2048로 암호화된 AES 세션 키
 ------
 268 bytes total
 ```
 
-**⚠️ `key_encrypt_type = 16` (0x10)**
-`15` (0x0F)를 보내면 서버가 **조용히 연결 거부** (에러 메시지 없음).
-
-**상태:** 🟡
+**상태:** 🟢 (2026-06-22 포트 995 실서버 CHECKIN 성공)
 
 ### 4.2 암호화 스펙
 
 | 항목 | 값 | 상태 |
 |------|-----|:----:|
-| 키 교환 | RSA-2048 OAEP SHA-1 | 🟡 |
-| 데이터 암호화 | AES-128-GCM | 🟡 |
-| RSA 공개키 지수(e) | **3** | ⚠️ (매우 특이. Node.js 지원 확인 필요) |
-| OAEP 해시 | **SHA-1** (반드시) | 🟡 |
-| AES 키 길이 | 128 bits (16 bytes) | 🟡 |
-| GCM nonce | 12 bytes random (매 프레임 새로) | 🟡 |
-| GCM tag | 16 bytes | 🟡 |
+| 키 교환 | RSA-2048 OAEP SHA-1 | 🟢 |
+| 데이터 암호화 | AES-128-CFB (NoPadding) | 🟢 |
+| RSA 공개키 지수(e) | **3** | 🟢 |
+| OAEP 해시 / MGF1 | **SHA-1 / SHA-1** | 🟢 |
+| AES 키 길이 | 128 bits (16 bytes) | 🟢 |
+| CFB IV | 16 bytes random (매 프레임 새로) | 🟢 |
 
 ### 4.3 암호화 프레임
 
 ```
 Offset  Size  Field
 ------  ----  -----
-0x00    4     encrypted_size   u32 LE (ciphertext + 16 byte GCM tag)
-0x04    12    nonce            crypto.randomBytes(12) — 매 프레임 새 nonce
-0x10    N     ciphertext       AES-128-GCM 암호문
-0x10+N  16    gcm_tag          인증 태그
+0x00    4     encrypted_size   u32 LE (16-byte IV + ciphertext)
+0x04    16    iv               crypto.randomBytes(16) — 매 프레임 새 IV
+0x14    N     ciphertext       AES-128-CFB 암호문
 ```
 
-**상태:** 🟡
+**상태:** 🟢 (2026-06-22 CHECKIN 요청/응답 roundtrip 확인)
 
 ### 4.4 RSA 공개키
 
-- 카카오톡 클라이언트 바이너리에서 추출해야 함
-- 또는 KiwiTalk 저장소에서 획득 가능 🔵
-- 키 형식: PEM or DER
+- KiwiTalk commit `7e8bcc34d6c2d994ff32b482bc649e8b51382255`에서 modulus와 e=3 추출
+- SPKI PEM으로 변환하여 `poc/02-checkin/public-key.pem`에 저장
+- Node.js `publicEncrypt` 및 실서버 핸드셰이크 성공
 
-**상태:** ⚠️ (획득 방법 확정 필요)
+**상태:** 🟢
 
 ---
 
@@ -164,17 +160,22 @@ Response BSON (주요 필드, 실서버 확인 🟢):
 Direction: Request → Response (핸드셰이크 이후)
 Host: ticket-loco.kakao.com:995 (TCP + RSA/AES)
 
-Request BSON (추정 🟡):
+Request BSON (실서버 확인 🟢):
 {
-  userId: long,
+  userId: long(1),
+  os: "win32",
+  ntype: 0,
+  appVer: "26.5.0",
+  MCCMNC: "999",
+  lang: "ko",
   countryISO: "KR",
-  ...
+  useSub: true
 }
 
-Response: LOCO 서버 IP, 포트, 세션 정보
+Response: `status`, `host`, `host6`, `port`, `cshost`, `csport`, `vsshost`, `vssport`, `cacheExpire`, `MCCMNC`
 ```
 
-**상태:** 🟡
+**상태:** 🟢 (2026-06-22 확인, 전체 응답은 `poc/fixtures/checkin-response.json`)
 
 ### 5.3 LOGINLIST — 인증 + 초기 채팅방 목록
 
@@ -268,7 +269,7 @@ Interval: 30초
 2. **모든 패킷은 hex dump를 파일로 저장** (poc/fixtures/ 에 Golden Packet 보관)
 3. **토큰/비밀번호는 콘솔 출력 시 마스킹** (`***`)
 4. **RSA e=3**: Node.js `crypto` 모듈에서 지원 여부 먼저 확인. 안 되면 수동 OAEP 구현
-5. **key_encrypt_type**: 16(0x10)인지 반드시 확인. 15(0x0F) 아님
+5. **Checkin 암호화**: 실서버 검증값은 `key_encrypt_type=15`, `encrypt_type=2` (AES-128-CFB)
 6. **TLS**: booking-loco.kakao.com:443은 일반 HTTPS 아님. TLS over raw TCP로 시도
 
 ---
