@@ -39,3 +39,44 @@ export {
   MAX_FRAME_SIZE,
 } from "./transport/socket.js";
 export type { SocketConfig } from "./transport/socket.js";
+
+// Auth Module (B-4)
+export {
+  authenticateWindows,
+  buildUserAgent,
+  computeXvc,
+  parseLoginResponse,
+  readWindowsCredentialsFromEnvironment,
+} from "./auth/windows.js";
+export type { AuthOptions } from "./auth/windows.js";
+export {
+  authenticateAndroid,
+  loginAndroid,
+  isAndroidDeviceAllowed,
+  generateAndroidPasscode,
+  waitForAndroidRegistration,
+  computeAndroidXvc,
+  readAndroidCredentialsFromEnvironment,
+} from "./auth/android.js";
+export type { AndroidAuthOptions, AndroidPasscodeChallenge } from "./auth/android.js";
+export {
+  AuthApiError,
+} from "./auth/types.js";
+export {
+  AndroidAuthApiError,
+} from "./auth/android.js";
+export type {
+  AuthCredentials,
+  AuthResult,
+  AndroidAuthCredentials,
+  LocoServerInfo,
+  LocoSession,
+} from "./auth/types.js";
+
+// Session (B-4)
+export {
+  checkin,
+  loginList,
+  establishSession,
+} from "./session.js";
+export type { SessionConfig } from "./session.js";
