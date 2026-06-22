@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "LOCO booking protocol feasibility tests",
   "scripts": {
+    "booking": "tsx booking.ts",
     "test": "tsx bson-test.ts",
     "typecheck": "tsc --noEmit"
   },

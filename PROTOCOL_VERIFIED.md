@@ -20,7 +20,7 @@
 
 | 용도 | 호스트 | 포트 | 프로토콜 | 상태 |
 |------|--------|------|----------|:----:|
-| Booking | `booking-loco.kakao.com` | 443 | TLS over TCP | 🟡 |
+| Booking | `booking-loco.kakao.com` | 443 | TLS over TCP | 🟢 |
 | Checkin | `ticket-loco.kakao.com` | 995 | TCP | 🟡 |
 | LOCO Server | 동적 (Booking 응답) | 동적 | TCP (AES 암호화) | 🟡 |
 | Kakao Auth | `accounts.kakao.com` | 443 | HTTPS | ⚠️ |
@@ -62,15 +62,14 @@ Offset  Size  Type    Field         Description
 22 bytes total
 ```
 
-**상태:** 🟡
+**상태:** 🟢 (2026-06-22 실서버 GETCONF 요청/응답으로 확인)
 
 ### 3.2 Body: BSON (Binary JSON)
 
-- MongoDB BSON 명세와 동일할 가능성 높음 🟡
-- npm `bson` 패키지로 직렬화/역직렬화 시도
+- MongoDB BSON 명세와 동일하며 npm `bson` 패키지로 직렬화/역직렬화 확인 🟢
 - **⛔ Protobuf 아님**
 
-**상태:** 🟡
+**상태:** 🟢 (2026-06-22 실서버 GETCONF BSON 디코딩 성공)
 
 ---
 
@@ -137,26 +136,27 @@ Offset  Size  Field
 Direction: Request → Response
 Host: booking-loco.kakao.com:443 (TLS)
 
-Request BSON (추정 🟡):
+Request BSON (실서버 확인 🟢):
 {
-  os: "win32",           // 또는 "macos", "linux"
-  version: "3.0.0",      // 클라이언트 버전
-  mccmnc: "45005",       // 통신사 코드 (한국)
-  device: "..."           // 기기 식별자
+  MCCMNC: "999",
+  os: "win32",
+  model: ""
 }
 
-Response BSON (추정 🟡):
+Response BSON (주요 필드, 실서버 확인 🟢):
 {
-  host: "ticket-loco.kakao.com",
-  port: 995,
-  srv: [
-    { host: "xxx.xxx.xxx.xxx", port: xxxxx },
-    ...
-  ]
+  revision: 197,
+  wifi: { ports: [995, 8080, ...], encType: 2, ... },
+  "3g": { ports: [995, 8080, ...], ... },
+  ticket: {
+    lsl: ["ticket-loco.kakao.com", "211.183.211.10", ...],
+    lsl6: ["ticket-loco.kakao.com", "2404:4600:...", ...]
+  },
+  ...
 }
 ```
 
-**상태:** 🟡
+**상태:** 🟢 (2026-06-22 확인, 전체 응답은 `poc/fixtures/getconf-response.json`)
 
 ### 5.2 CHECKIN — LOCO 서버 할당
 

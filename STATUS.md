@@ -1,6 +1,6 @@
 # STATUS.md — Phase A 진행 현황
 
-> 마지막 업데이트: 2026-06-22 15:43
+> 마지막 업데이트: 2026-06-22 15:56
 > 각 Task 완료/실패 시 아래 표를 채우고 `git commit && git push`
 
 ---
@@ -19,12 +19,12 @@
 - **결과 요약:** KiwiTalk에서 RSA-2048 공개키를 추출했으며 Node.js에서 공개 지수 e=3, OAEP SHA-1 암호화 및 256-byte 암호문 생성을 확인
 - **참고사항:** 키 출처는 KiwiTalk commit `7e8bcc34d6c2d994ff32b482bc649e8b51382255`. `npm run typecheck`, `npm test` 통과
 
-## Task A-3: Booking (GETCONF) ⬜
-- **상태:** ⬜ 미완료
-- **완료 시간:** -
-- **산출물:** -
-- **결과 요약:** -
-- **참고사항:** -
+## Task A-3: Booking (GETCONF) ✅
+- **상태:** ✅ 완료
+- **완료 시간:** 2026-06-22 15:56
+- **산출물:** `poc/01-booking/booking.ts`, `poc/fixtures/getconf-response.json`, `poc/fixtures/getconf-packets.hex`
+- **결과 요약:** TLS 연결과 GETCONF 응답 BSON 디코딩 성공. `ticket.lsl/lsl6`에서 ticket 서버를, `wifi.ports`에서 포트 995를 확인
+- **참고사항:** 실제 응답은 추정 `srv` 배열이 아닌 `ticket` + `wifi/3g` 구조이며 현재 `wifi.encType`은 2. `npm run typecheck`, `npm test`, `npm run booking` 통과
 
 ## Task A-4: Checkin (RSA+AES 핸드셰이크) ⬜
 - **상태:** ⬜ 미완료

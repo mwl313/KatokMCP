@@ -1,0 +1,98 @@
+{
+  "status": 0,
+  "trailer": {
+    "vFps": 30,
+    "aCodec": 1,
+    "vCodec": 1,
+    "vBitrate": 4096000,
+    "compRatio": 40,
+    "upMaxSize": 20971520,
+    "aFrequency": 44100,
+    "resolution": 960,
+    "compRatioHD": 90,
+    "vResolution": 720,
+    "maxRelaySize": 512000,
+    "resolutionHD": 1280,
+    "downCheckSize": 3145728,
+    "videoUpMaxSize": 314572800,
+    "tokenExpireTime": 1800,
+    "concurrentUpLimit": 5,
+    "contentExpireTime": 1209600,
+    "concurrentDownLimit": 5
+  },
+  "wifi": {
+    "ports": [
+      995,
+      8080,
+      5223,
+      5228,
+      9282,
+      5242,
+      10009
+    ],
+    "encType": 2,
+    "bgKeepItv": -1,
+    "bgPingItv": 600,
+    "fgPingItv": 180,
+    "reqTimeout": 20,
+    "bgReconnItv": 180,
+    "connTimeout": 15,
+    "inSegTimeout": 10,
+    "outSegTimeout": 10,
+    "blockSendBufSize": 2048,
+    "recvHeaderTimeout": 20
+  },
+  "3g": {
+    "ports": [
+      995,
+      8080,
+      5223,
+      5228,
+      9282,
+      5242,
+      10009
+    ],
+    "bgKeepItv": -1,
+    "bgPingItv": 1200,
+    "fgPingItv": 180,
+    "bgReconnItv": 300,
+    "connTimeout": 15,
+    "inSegTimeout": 10,
+    "outSegTimeout": 10,
+    "blockSendBufSize": 2048,
+    "recvHeaderTimeout": 25
+  },
+  "ticket": {
+    "lsl": [
+      "ticket-loco.kakao.com",
+      "211.183.211.10",
+      "121.53.93.47",
+      "211.183.222.6"
+    ],
+    "lsl6": [
+      "ticket-loco.kakao.com",
+      "2404:4600:9:2dc::228",
+      "2404:4600:6:4e5::7f"
+    ]
+  },
+  "etc": {
+    "tracerouteHost": [
+      "nettest.kakao.com"
+    ],
+    "tracerouteHost6": [
+      "nettest.kakao.com"
+    ],
+    "writeRetryTimeout": 900,
+    "connectivityCheckUrl": ""
+  },
+  "profile": {
+    "vBitrate": 8196000,
+    "vResolution": 1080
+  },
+  "trailer.h": {
+    "vBitrate": 8196000,
+    "aFrequency": 44100,
+    "vResolution": 1080
+  },
+  "revision": 197
+}
