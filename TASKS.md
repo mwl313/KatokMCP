@@ -1,21 +1,48 @@
 # 📋 TASKS.md — Codex 작업 지시서
 
 > Phase A: Feasibility Gate — "인증부터 채팅방 목록까지 될까?"
-> 작업 디렉토리: `~/Haven_v0.5/home/projects/kakao-mcp/poc/`
+> 작업 디렉토리: `poc/` (레포 루트 기준 상대경로)
 > 상태: ⬜ 미완료 | 🔄 진행 중 | ✅ 완료 | ❌ 실패
 
 ---
 
 ## ⚠️ Codex 필독 규칙
 
+### 보안
 1. **모든 토큰, 비밀번호, 세션 키는 콘솔 출력 시 `***`로 마스킹할 것**
-2. **실패 시 반드시 에러 메시지 + 패킷 hex dump를 파일로 저장할 것**
+2. **토큰/세션 키를 파일로 저장하지 말 것** — 메모리에서만 사용. `.env` 파일도 gitignore 확인
+3. **채팅 메시지 내용을 fixtures에 저장할 때는 발신자/내용 마스킹** — 구조 검증용 메타데이터만
+
+### 작업 규칙
+4. **한 Task가 끝날 때마다 `STATUS.md` 에 진행상황을 기록할 것** (하단 템플릿 참고)
+5. **Task 완료/실패 시 git commit & push 할 것** — 아리아가 pull해서 검증함
+   ```bash
+   git add -A && git commit -m "A-X: (완료/실패) 설명" && git push
+   ```
+6. **실패 시 반드시 에러 메시지 + 패킷 hex dump를 파일로 저장할 것**
    - 저장 위치: `poc/xx-xxx/debug-YYYYMMDD-HHMMSS.log`
-3. **성공한 패킷은 `poc/fixtures/` 에 JSON + hex dump 형태로 저장할 것** (Golden Packet)
-4. **`PROTOCOL_VERIFIED.md` 의 🟡/⚠️ 항목은 "가설"이다. 실패해도 당황하지 말 것**
-5. **한 스텝이 성공해야 다음 스텝으로 넘어간다.** 실패 시 중단하고 보고
-6. **TypeScript + Node.js 18 이상 사용.** `node:crypto`, `net`, `tls` 내장 모듈 활용
-7. **npm 패키지 추가 필요 시 `package.json` 에 명시하고 `npm install` 실행**
+7. **성공한 패킷은 `poc/fixtures/` 에 JSON + hex dump 형태로 저장할 것** (Golden Packet)
+8. **`PROTOCOL_VERIFIED.md` 의 🟡/⚠️ 항목은 "가설"이다. 실패해도 당황하지 말 것**
+9. **한 스텝이 성공해야 다음 스텝으로 넘어간다.** 실패 시 중단하고 STATUS.md에 보고
+10. **TypeScript + Node.js 18 이상 사용.** `node:crypto`, `net`, `tls` 내장 모듈 활용
+11. **npm 패키지 추가 필요 시 `package.json` 에 명시하고 `npm install` 실행**
+
+### STATUS.md 템플릿 (매 Task 완료 후 업데이트)
+```markdown
+# STATUS.md — Phase A 진행 현황
+
+> 마지막 업데이트: YYYY-MM-DD HH:MM
+
+## Task A-1: BSON + 패킷 인코딩 ⬜
+- 상태: 진행 중 / 완료 / 실패
+- 완료 시간: 
+- 산출물: 
+- 결과 요약:
+- 참고사항:
+
+## Task A-2: RSA 공개키 확보 ⬜
+...
+```
 
 ---
 
@@ -248,7 +275,7 @@
 ### 예상 산출물:
 - `poc/03-loginlist/loginlist.ts`
 - `poc/fixtures/loginlist-response.json`
-- `poc/fixtures/session-token.txt` (⚠️ 마스킹)
+- ⚠️ 세션 토큰은 파일 저장 금지 (메모리에서만)
 
 ### 검증 기준: **이 Task 성공 여부가 프로젝트 Go/No-Go 결정**
 - LOGINLIST 응답 200
