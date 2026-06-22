@@ -302,7 +302,7 @@ export async function waitForAndroidRegistration(
   }
 }
 
-function readAndroidCredentialsFromEnvironment(): AndroidAuthCredentials {
+export function readAndroidCredentialsFromEnvironment(): AndroidAuthCredentials {
   const email = process.env.KAKAO_EMAIL;
   const password = process.env.KAKAO_PASSWORD;
   const deviceUuid = process.env.KAKAO_ANDROID_DEVICE_UUID;
