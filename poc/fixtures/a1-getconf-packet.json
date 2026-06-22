@@ -1,0 +1,15 @@
+{
+  "header": {
+    "packetId": 1,
+    "statusCode": 0,
+    "method": "GETCONF",
+    "bodyType": 0,
+    "bodySize": 82
+  },
+  "body": {
+    "os": "win32",
+    "version": "3.0.0",
+    "mccmnc": "45005",
+    "device": "codex-a1-test"
+  }
+}

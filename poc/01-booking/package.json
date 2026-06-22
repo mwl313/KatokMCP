@@ -1,0 +1,20 @@
+{
+  "name": "01-booking",
+  "version": "1.0.0",
+  "description": "LOCO booking protocol feasibility tests",
+  "scripts": {
+    "test": "tsx bson-test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "UNLICENSED",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@types/node": "^26.0.0",
+    "bson": "^7.3.0",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3"
+  }
+}

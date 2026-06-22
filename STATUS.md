@@ -1,16 +1,16 @@
 # STATUS.md — Phase A 진행 현황
 
-> 마지막 업데이트: (Codex가 이 파일을 업데이트합니다)
+> 마지막 업데이트: 2026-06-22 15:40
 > 각 Task 완료/실패 시 아래 표를 채우고 `git commit && git push`
 
 ---
 
-## Task A-1: BSON + 패킷 인코딩 ⬜
-- **상태:** ⬜ 미완료
-- **완료 시간:** -
-- **산출물:** -
-- **결과 요약:** -
-- **참고사항:** -
+## Task A-1: BSON + 패킷 인코딩 ✅
+- **상태:** ✅ 완료
+- **완료 시간:** 2026-06-22 15:40
+- **산출물:** `poc/01-booking/header.ts`, `poc/01-booking/bson-test.ts`, `poc/01-booking/package.json`, `poc/fixtures/a1-getconf-packet.json`, `poc/fixtures/a1-getconf-packet.hex`
+- **결과 요약:** 22-byte LOCO 헤더와 BSON 각각의 roundtrip 및 GETCONF 통합 패킷 조립/파싱 성공
+- **참고사항:** `npm run typecheck`, `npm test` 통과. 현재 패킷 명세는 `PROTOCOL_VERIFIED.md`의 가설을 기준으로 검증함
 
 ## Task A-2: RSA 공개키 확보 ⬜
 - **상태:** ⬜ 미완료
