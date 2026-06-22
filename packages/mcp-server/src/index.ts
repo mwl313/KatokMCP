@@ -31,6 +31,7 @@ import {
   sendLchatListOn,
   sendWrite,
   sendDeleteMsg,
+  sendGetMem,
   getChatId,
   getMessageText,
   LocoError,
@@ -146,16 +147,21 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       inputSchema: {
         type: "object",
         properties: {
-          chatId: {
-            type: "string",
-            description: "Chat room ID to send message to",
-          },
-          message: {
-            type: "string",
-            description: "Message text to send",
-          },
+          chatId: { type: "string", description: "Chat room ID to send message to" },
+          message: { type: "string", description: "Message text to send" },
         },
         required: ["chatId", "message"],
+      },
+    },
+    {
+      name: "kakao_list_members",
+      description: "List members of a specific KakaoTalk chat room.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          chatId: { type: "string", description: "Chat room ID" },
+        },
+        required: ["chatId"],
       },
     },
   ],
@@ -200,6 +206,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         });
         const logId = sendResult.logId ?? "(unknown)";
         result = { content: [{ type: "text", text: `Message sent. (logId: ${logId})` }] };
+        break;
+      }
+
+      case "kakao_list_members": {
+        const c = await ensureClient();
+        const chatId = BigInt(String(args?.chatId ?? ""));
+        const members = await sendGetMem(c, chatId);
+        const userIds = (members.memberIds ?? members.members ?? []).map((id: any) => String(decodeLong(id)));
+        const displayMembers = members.displayMembers ?? [];
+        const names = displayMembers.map((m: any) => `${m.nickname ?? "?"} (#${m.userId ?? "?"})`).join("\n");
+        const text = names || `Members: ${userIds.join(", ")}`;
+        result = { content: [{ type: "text", text }] };
         break;
       }
 

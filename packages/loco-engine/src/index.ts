@@ -85,12 +85,14 @@ export {
   LocoConnection,
 } from "./connection.js";
 
-// Command Modules (B-5 + B-6 + C-1 + C-2)
+// Command Modules (B-5 + B-6 + C-1 + C-2 + C-3)
 export {
   sendLchatListOn,
   sendSyncMsgOn,
   sendWrite,
   sendDeleteMsg,
+  sendGetMem,
+  sendMember,
   sendPing,
   getChatId,
   getMessageText,
