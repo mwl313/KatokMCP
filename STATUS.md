@@ -1,6 +1,6 @@
 # STATUS.md — 프로젝트 진행 현황
 
-> 마지막 업데이트: 2026-06-23 08:31
+> 마지막 업데이트: 2026-06-23 08:49
 > ✅ 모든 Phase (A~F) 완료 | ✅ IMPROVEMENTS 전 항목 완료
 > 📦 `experiment/cline-flash` → `main` 병합 준비 완료
 
@@ -119,6 +119,20 @@ packages/mcp-server/src/
 
 ---
 
+## IMPROVEMENTS-v2 (e6e3ac7) ✅
+
+> IMPROVEMENTS.md 리뷰 기반 v2 개선 항목 — `experiment/cline-flash` → `main` 머지 완료
+
+| # | 작업 | 상태 |
+|:-:|------|:----:|
+| 1 | public-key.pem assets/ 존재 확인 | ✅ |
+| 2 | MCP 서버 Keep-Alive 연동 (`startKeepAlive()`) | ✅ |
+| 3 | connection.ts unused import 제거 (`import { once }`) | ✅ |
+| 4 | TCP 프레임 경계 처리 (`remainder` → pushBuffer) | ✅ |
+| 5 | docs/ai-integration.md `npm install/build/run` 설치 섹션 | ✅ |
+
+---
+
 ## IMPROVEMENTS (cf81fcd) ✅
 
 | # | 작업 | 상태 |
@@ -137,7 +151,8 @@ packages/mcp-server/src/
 
 | 해시 | 날짜 | 내용 |
 |:----:|:----:|------|
-| **`cf81fcd`** | 06-23 | **IMPROVEMENTS 전 항목 완료** |
+| **`e6e3ac7`** | **06-23** | **🚀 main 머지: IMPROVEMENTS-v2 전 항목 적용** |
+| `cf81fcd` | 06-23 | IMPROVEMENTS 전 항목 완료 |
 | `d14755a` | 06-23 | README 한국어/영어 재작성 |
 | `cdb983d` | 06-23 | MIT License 추가 |
 | `f2118cd` | 06-23 | Phase E-1: Stream Reader |
