@@ -5,3 +5,5 @@ dist/
 .env.local
 .env.*.local
 kakaoauth.env
+*.pem
+.kakao-mcp/

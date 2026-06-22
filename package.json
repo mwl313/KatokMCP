@@ -1,0 +1,15 @@
+{
+  "name": "kakao-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "KakaoTalk MCP Server — AI agent interface for KakaoTalk",
+  "workspaces": [
+    "packages/loco-engine",
+    "packages/mcp-server"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "typecheck": "npm run typecheck --workspaces",
+    "clean": "npm run clean --workspaces"
+  }
+}

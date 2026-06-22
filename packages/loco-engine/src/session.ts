@@ -6,6 +6,7 @@
 
 import { randomBytes } from "node:crypto";
 import { readFile } from "node:fs/promises";
+import { sendPing } from "./commands.js";
 import { BSON, Long, type Document } from "bson";
 import { encodeHeader, LOCO_HEADER_SIZE } from "./protocol/header.js";
 import { createHandshake } from "./crypto/handshake.js";
@@ -67,7 +68,7 @@ export class LocoClient {
   static async connect(config: SessionConfig): Promise<LocoClient> {
     const appVer = config.appVersion ?? "25.9.2";
     const publicKey = config.publicKey ?? await readFile(
-      config.publicKeyPath ?? new URL("../../poc/02-checkin/public-key.pem", import.meta.url), "utf8",
+      config.publicKeyPath ?? new URL("../assets/public-key.pem", import.meta.url), "utf8",
     );
     const deviceUuid = process.env.KAKAO_ANDROID_DEVICE_UUID ?? "0000000000000000000000000000000000000000000000000000000000000000";
 
@@ -124,8 +125,26 @@ export class LocoClient {
     return decoded;
   }
 
+  /** Start Keep-Alive PING interval (default: 30s) */
+  private pingInterval?: ReturnType<typeof setInterval>;
+
+  startKeepAlive(intervalMs = 30_000): void {
+    this.stopKeepAlive();
+    this.pingInterval = setInterval(() => {
+      sendPing(this).catch(() => { /* ignore ping failures */ });
+    }, intervalMs);
+  }
+
+  stopKeepAlive(): void {
+    if (this.pingInterval) {
+      clearInterval(this.pingInterval);
+      this.pingInterval = undefined;
+    }
+  }
+
   /** Close the persistent connection */
   close(): void {
+    this.stopKeepAlive();
     this.conn.close();
     this.sessionKey.fill(0);
   }

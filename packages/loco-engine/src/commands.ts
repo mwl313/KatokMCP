@@ -6,10 +6,7 @@
  */
 
 import { BSON, Long, type Document } from "bson";
-import { encodeHeader, LOCO_HEADER_SIZE } from "./protocol/header.js";
-import { LocoConnection } from "./connection.js";
 import type { LocoClient } from "./session.js";
-import type { LocoSession } from "./auth/types.js";
 
 export interface LchatListRequest {
   chatIds: bigint[];
@@ -57,7 +54,7 @@ export async function sendSyncMsgOn(client: LocoClient, req: SyncMsgRequest): Pr
   return client.sendRaw("SYNCMSG", body);
 }
 
-/** Send WRITE — send text message to a chat room */
+/** Send WRITE */
 export async function sendWrite(client: LocoClient, req: WriteRequest): Promise<Document> {
   const msgId = Date.now();
   return client.sendRaw("WRITE", Buffer.from(BSON.serialize({
@@ -73,58 +70,21 @@ export async function sendDeleteMsg(client: LocoClient, req: DeleteMsgRequest): 
   })));
 }
 
-// ─── Phase C-3: GETMEM / MEMBER ──────────────────────────────────────────
-
-/** Get all members of a chat room (GETMEM) */
+/** GETMEM — get all members of a chat room */
 export async function sendGetMem(client: LocoClient, chatId: bigint): Promise<Document> {
-  return client.sendRaw("GETMEM", Buffer.from(BSON.serialize({
-    chatId: Long.fromBigInt(chatId),
-  })));
+  return client.sendRaw("GETMEM", Buffer.from(BSON.serialize({ chatId: Long.fromBigInt(chatId) })));
 }
 
-/** Get specific members by IDs (MEMBER) */
+/** MEMBER — get specific members by IDs */
 export async function sendMember(client: LocoClient, chatId: bigint, memberIds: bigint[]): Promise<Document> {
   return client.sendRaw("MEMBER", Buffer.from(BSON.serialize({
-    chatId: Long.fromBigInt(chatId),
-    memberIds: memberIds.map((v) => Long.fromBigInt(v)),
+    chatId: Long.fromBigInt(chatId), memberIds: memberIds.map((v) => Long.fromBigInt(v)),
   })));
 }
 
-/** Send PING */
+/** PING */
 export async function sendPing(client: LocoClient): Promise<void> {
   await client.sendRaw("PING", Buffer.alloc(0));
-}
-
-// ─── Legacy functions ────────────────────────────────────────────────────
-
-/** @deprecated Use sendLchatListOn */
-export async function sendLchatList(session: LocoSession, req: LchatListRequest, publicKey: string, _appVer: string): Promise<Document> {
-  const conn = new LocoConnection(session.locoServer.host, session.locoServer.port, publicKey);
-  await conn.connect();
-  try {
-    const body = Buffer.from(BSON.serialize({
-      chatIds: req.chatIds.map((v) => Long.fromBigInt(v)), maxIds: req.maxIds.map((v) => Long.fromBigInt(v)),
-      lastTokenId: Long.fromBigInt(BigInt(req.lastTokenId)), lastChatId: Long.fromBigInt(BigInt(req.lastChatId)),
-    }));
-    const packet = encodeHeader(1, "LCHATLIST", 0, body);
-    const resp = await conn.command(packet);
-    if (resp.length < LOCO_HEADER_SIZE) throw new Error("LCHATLIST too short");
-    return BSON.deserialize(resp.subarray(LOCO_HEADER_SIZE)) as Document;
-  } finally { conn.close(); }
-}
-
-/** @deprecated Use sendSyncMsgOn */
-export async function sendSyncMsg(session: LocoSession, req: SyncMsgRequest, publicKey: string, _appVer: string): Promise<Document> {
-  const conn = new LocoConnection(session.locoServer.host, session.locoServer.port, publicKey);
-  await conn.connect();
-  try {
-    const body = Buffer.from(BSON.serialize({
-      chatId: Long.fromBigInt(req.chatId), cur: Long.fromBigInt(req.cur), max: Long.fromBigInt(req.max), cnt: req.cnt,
-    }));
-    const resp = await conn.command(encodeHeader(1, "SYNCMSG", 0, body));
-    if (resp.length < LOCO_HEADER_SIZE) throw new Error("SYNCMSG too short");
-    return BSON.deserialize(resp.subarray(LOCO_HEADER_SIZE)) as Document;
-  } finally { conn.close(); }
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
