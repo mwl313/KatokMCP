@@ -311,6 +311,7 @@ Interval: 30초
 |:----:|------|:----:|------|
 | 0 | 성공 | 🟢 | |
 | -100 | 기기 등록 필요 (Windows) | 🟢 | Android passcode 우회 필요 |
+| -201 | 요청 오류 (필드 타입/값 불일치) | 🟡 | LCHATLIST/SYNCMSG에서 확인. lastTokenId 등 Long 타입 변환 문제 추정 |
 | -300 | 요청 오류 (Token/필드 불일치) | 🟢 | `token`→`oauthToken` 수정, `duuid`/`prtVer`/`rp` 등 필드 누락 |
 | -500 | 서버 내부 오류 | 🟡 | |
 | -501 | 인증 실패 | 🟡 | |
