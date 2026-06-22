@@ -1,0 +1,33 @@
+{
+  "name": "@kakao-mcp/loco-engine",
+  "version": "0.1.0",
+  "description": "KakaoTalk LOCO protocol client engine",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "keywords": ["kakao", "kakaotalk", "loco", "protocol"],
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "bson": "^7.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.0",
+    "typescript": "^6.0.3"
+  },
+  "files": [
+    "dist",
+    "src"
+  ]
+}

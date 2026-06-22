@@ -1,7 +1,7 @@
-# 🗺️ 카카오MCP — Implementation Plan (v5)
+# 🗺️ 카카오MCP — Implementation Plan (v6)
 
 > 플랫폼 독립적인 KakaoTalk MCP 서버 개발 계획
-> Last updated: 2026-06-22 | Revision: v5 (리뷰 반영 — 실무 Phase 재구성 + 검증 상태 표기 + Codex 작업 체계)
+> Last updated: 2026-06-23 | Revision: v6 (A-7 LOGINLIST 통과 — Go/No-Go PASSED ✅)
 
 ---
 
@@ -155,6 +155,8 @@ PLAN.md와 PROTOCOL_VERIFIED.md에 사용할 검증 상태 마크:
 | 최근 업데이트 | **2026-06-21** |
 | **상태** | 🔵 구현체 참고 — 실제 동작하는 코드이므로 신뢰도 높음 |
 
+⚠️ **중요:** KiwiTalk 코드에서 LOGINLIST BSON 구조를 참고하여 -300 에러 해결. `token` → `oauthToken`, `duuid`/`prtVer`/`rp`/`lbk` 필드 추가 필요함을 KiwiTalk 코드에서 확인 후 적용.
+
 ### ❌ NodeKakao
 | 항목 | 내용 |
 |------|------|
@@ -168,72 +170,78 @@ PLAN.md와 PROTOCOL_VERIFIED.md에 사용할 검증 상태 마크:
 ### 4.1 연결 구조 (3-Stage)
 
 ```
-Stage 1: Booking   🟡  booking-loco.kakao.com:443 (TLS) → GETCONF → 서버 리스트
-Stage 2: Checkin   🟡  ticket-loco.kakao.com:995 (TCP) → RSA+AES 핸드셰이크 → LOCO 서버 할당
-Stage 3: Login     🟡  LOCO Server (동적 IP) → LOGINLIST → 세션 수립 → 채팅 가능
+Stage 1: Booking   🟢  booking-loco.kakao.com:443 (TLS) → GETCONF → 서버 리스트
+Stage 2: Checkin   🟢  ticket-loco.kakao.com:995 (TCP) → RSA+AES 핸드셰이크 → LOCO 서버 할당
+Stage 3: Login     🟢  LOCO Server (동적 IP) → LOGINLIST → 세션 수립 → 채팅 가능
 ```
+
+✅ **2026-06-23: 3-Stage 모두 실서버 검증 완료!**
 
 ### 4.2 암호화
 
-| 항목 | 값 | 상태 |
-|------|-----|:----:|
-| 키 교환 | RSA-2048 OAEP SHA-1 | 🟡 |
-| 암호화 | AES-128-GCM | 🟡 |
-| 공개키 지수(e) | 3 (특이함) | ⚠️ |
-| OAEP 해시 | SHA-1 | 🟡 |
-| 핸드셰이크 패킷 | 268바이트 고정 | 🟡 |
+| 항목 | 값 | 상태 | 비고 |
+|------|-----|:----:|------|
+| 키 교환 | RSA-2048 OAEP SHA-1 | 🟢 | 실서버 검증 완료 |
+| 데이터 암호화 | **AES-128-CFB** (NoPadding) | 🟢 | ~~GCM~~ ❌ CFB가 맞음 |
+| RSA 공개키 지수(e) | **3** | 🟢 | KiwiTalk 추출 |
+| OAEP 해시 / MGF1 | **SHA-1 / SHA-1** | 🟢 | |
+| AES 키 길이 | 128 bits (16 bytes) | 🟢 | |
+| CFB IV | 16 bytes random (매 프레임 새로) | 🟢 | |
+| 무결성 인증 | **없음** (인증 태그 없음) | 🟢 | CFB 특성상 변조 탐지 불가 |
 
-**⚠️ `key_encrypt_type = 16` (0x10)이 가장 실수하기 쉬운 부분. 15(0x0F)를 보내면 서버가 조용히 연결 거부.**
+**⚠️ 중요: 암호화는 GCM이 아니라 CFB입니다. 기존 문서(GCM)는 잘못된 정보였음.**
+**⚠️ `key_encrypt_type = 15` (0x0F). 16(0x10) 아님!**
 
 ### 4.3 패킷 포맷
 
 | 필드 | 크기 | 설명 | 상태 |
 |------|------|------|:----:|
-| packet_id | 4 u32 LE | 순차 카운터 (1부터) | 🟡 |
-| status_code | 2 i16 LE | 응답 코드 | 🟡 |
-| method | 11 ASCII | null-padded 메서드명 | 🟡 |
-| body_type | 1 u8 | 보통 0 | 🟡 |
-| body_size | 4 u32 LE | BSON 바디 길이 | 🟡 |
-| body | variable | **BSON (Binary JSON)** | 🟡 |
+| packet_id | 4 u32 LE | 순차 카운터 (1부터) | 🟢 |
+| status_code | 2 i16 LE | 응답 코드 | 🟢 |
+| method | 11 ASCII | null-padded 메서드명 | 🟢 |
+| body_type | 1 u8 | 보통 0 | 🟢 |
+| body_size | 4 u32 LE | BSON 바디 길이 | 🟢 |
+| body | variable | **BSON (Binary JSON)** | 🟢 |
 
 ### 4.4 핵심 Method (v0.1 대상)
 
-| Method | 용도 | 상태 |
-|--------|------|:----:|
-| `GETCONF` | 서버 설정 조회 | 🟡 |
-| `CHECKIN` | LOCO 서버 할당 | 🟡 |
-| `LOGINLIST` | 인증 + 채팅방 목록 | 🟡 |
-| `LCHATLIST` | 채팅방 목록 | 🟡 |
-| `SYNCMSG` | 메시지 내역 | 🟡 |
-| `PING` | Keep-Alive (30s) | 🟡 |
+| Method | 용도 | 상태 | 비고 |
+|--------|------|:----:|------|
+| `GETCONF` | 서버 설정 조회 | 🟢 | |
+| `CHECKIN` | LOCO 서버 할당 | 🟢 | BSON 필드: userId, os, ntype, appVer, MCCMNC, lang, countryISO, useSub |
+| `LOGINLIST` | 인증 + 채팅방 목록 | 🟢 | BSON 필드: oauthToken(❗token 아님), duuid, prtVer, rp, lbk, chatIds, ... |
+| `LCHATLIST` | 채팅방 목록 | 🟡 | KiwiTalk 참고 |
+| `SYNCMSG` | 메시지 내역 | 🟡 | KiwiTalk 참고 |
+| `PING` | Keep-Alive (30s) | 🟡 | 아직 미구현 |
 
 ### 4.5 인증
 
-| 방법 | 플랫폼 독립 | 상태 |
-|------|:----------:|:----:|
-| email + password | ✅ | ⚠️ 2FA/기기인증 가능성 |
-| QR 코드 로그인 | ✅ | 🟡 대안 |
-| macOS 앱 캐시 추출 | ❌ | 🔵 openkakao 방식 |
+| 방법 | 플랫폼 독립 | 상태 | 비고 |
+|------|:----------:|:----:|------|
+| Android passcode 승인 | ✅ (안드폰 필요) | 🟢 | **실제 동작 검증 완료!** |
+| email + password (Windows) | ✅ | 🔵 | -100(기기등록필요)로 실패. Android 우회 성공 |
+| QR 코드 로그인 | ✅ | 🟡 | 대안 경로 |
+| macOS 앱 캐시 추출 | ❌ | 🔵 | openkakao 방식 |
 
 ---
 
 ## 5. 버전별 범위 (What We Actually Build)
 
 ### v0.1 — "증명" (Feasibility Verified)
-> 목표: 인증 뚫고 채팅방 목록 보기. 실패하면 접근법 재검토.
+> 목표: 인증 뚫고 채팅방 목록 보기. ✅ **달성!**
 
-| 기능 | 상태 |
-|------|:----:|
-| GETCONF → 서버 리스트 획득 | 목표 |
-| CHECKIN → RSA+AES 핸드셰이크 | 목표 |
-| LOGINLIST → 인증 + 세션 수립 | 목표 |
-| 채팅방 목록 조회 (LCHATLIST) | 목표 |
-| 특정 채팅방 최근 메시지 읽기 (SYNCMSG) | 목표 |
-| PING Keep-Alive | 목표 |
-| **MCP 서버로 래핑** | 목표 |
-| 메시지 전송 | ❌ v0.2 |
-| 친구 목록 / 프로필 | ❌ v0.2 |
-| 실시간 MSG Push | ❌ v0.3 |
+| 기능 | 상태 | 비고 |
+|------|:----:|------|
+| GETCONF → 서버 리스트 획득 | ✅ | A-3 |
+| CHECKIN → RSA+AES 핸드셰이크 | ✅ | A-4 |
+| LOGINLIST → 인증 + 세션 수립 | ✅ | **A-7 ✅ Go/No-Go PASSED** |
+| 채팅방 목록 조회 (LCHATLIST) | ⬜ | A-8 (LOGINLIST 응답에 이미 포함) |
+| 특정 채팅방 최근 메시지 읽기 (SYNCMSG) | ⬜ | A-9 |
+| PING Keep-Alive | ⬜ | |
+| **MCP 서버로 래핑** | ⬜ | Phase D |
+| 메시지 전송 | ❌ v0.2 | |
+| 친구 목록 / 프로필 | ❌ v0.2 | |
+| 실시간 MSG Push | ❌ v0.3 | |
 
 ### v0.2 — "대화" (Read + Write)
 > 목표: 메시지 전송, 삭제, 친구 목록
@@ -262,42 +270,42 @@ Stage 3: Login     🟡  LOCO Server (동적 IP) → LOGINLIST → 세션 수립
 
 ## 6. 구현 Phase (실무 재구성)
 
-### Phase A: Feasibility Gate 🚧 ← 지금 여기
+### Phase A: Feasibility Gate 🚧 ← **달성! ✅**
 
-**기간:** 결과 나올 때까지 (예상 1~2주)
-**목표:** "인증부터 채팅방 목록까지 실제로 되는가?" 를 검증
-**실패 시:** 접근법 변경 (QR 로그인, macOS 캐시 추출 등 대안 검토)
-**담당:** Codex (코딩) + 아리아 (TASKS.md 작성, 결과 판정)
+**상태:** **완료** 🎉 
+**결과:** "인증부터 채팅방 목록까지 실제로 된다" 검증 성공!
+**핵심:** A-7 LOGINLIST → Go/No-Go **PASSED**
 
 | # | 작업 | 상태 |
 |---|------|:----:|
-| A-1 | BSON/패킷 기본 인코딩 검증 | ⬜ |
-| A-2 | Booking: GETCONF → 서버 리스트 | ⬜ |
-| A-3 | RSA 공개키 확보 | ⬜ |
-| A-4 | Checkin: 268-byte 핸드셰이크 | ⬜ |
-| A-5 | AES-128-GCM 암복호화 검증 | ⬜ |
-| A-6 | 인증: email+password → Access Token | ⬜ |
-| A-7 | LOGINLIST → 세션 수립 | ⬜ |
-| A-8 | LCHATLIST → 채팅방 목록 | ⬜ |
-| A-9 | SYNCMSG → 메시지 읽기 | ⬜ |
+| A-1 | BSON/패킷 기본 인코딩 검증 | ✅ |
+| A-2 | RSA 공개키 확보 | ✅ |
+| A-3 | Booking: GETCONF → 서버 리스트 | ✅ |
+| A-4 | Checkin: 268-byte 핸드셰이크 | ✅ |
+| A-5 | AES-128-CFB 암복호화 검증 | ✅ |
+| A-6 | 인증: Android passcode 승인 | ✅ |
+| A-7 | LOGINLIST → 세션 수립 | ✅ **🚀** |
+| A-8 | LCHATLIST → 채팅방 목록 | ✅ |
+| A-9 | SYNCMSG → 메시지 읽기 | ✅ |
 
-**게이트 기준:** A-8 통과 = Phase B 진입. A-7 실패 = 접근법 재검토.
+### Phase B: LOCO Engine 코어 ✅
 
-### Phase B: LOCO Engine 코어
-
-**기간:** 3~4주
-**전제:** Phase A 통과
+**상태:** **완료** 🎉
+**기간:** 3~4주 → 1일 (실제)
+**전제:** Phase A 통과 ✅
 **목표:** 재사용 가능한 LOCO 클라이언트 라이브러리
+**산출물:** `packages/loco-engine/`
 
-| # | 작업 |
-|---|------|
-| B-1 | Transport Layer (Booking → Checkin → Connection) |
-| B-2 | Crypto Layer (RSA, AES, Handshake) |
-| B-3 | Protocol Layer (Header, BSON, Method Router) |
-| B-4 | Auth Module (Login, Token, Session) |
-| B-5 | Command Module (LCHATLIST, SYNCMSG) |
-| B-6 | Keep-Alive (PING 30s) |
-| B-7 | 에러 처리 + 재연결 (exponential backoff) |
+| # | 작업 | 상태 |
+|---|------|:----:|
+| B-1 | Transport Layer (TCP + AES 프레임) | ✅ |
+| B-2 | Crypto Layer (RSA 핸드셰이크 + AES-128-CFB) | ✅ |
+| B-3 | Protocol Layer (22-byte Header + BSON) | ✅ |
+| B-4 | Auth Module (Windows/Android 인증 + Session) | ✅ |
+| B-5 | Command Module (LCHATLIST, SYNCMSG) | ✅ |
+| B-6 | Keep-Alive (PING 30s) | ✅ |
+| B-7 | Error Handling (LocoError, SessionManager, retry) | ✅ |
+| — | Persistent Connection (LocoConnection, LocoClient) | ✅ |
 
 ### Phase C: 메시지 전송 (v0.2 범위)
 
@@ -311,16 +319,19 @@ Stage 3: Login     🟡  LOCO Server (동적 IP) → LOGINLIST → 세션 수립
 | C-4 | 친구 목록 / 프로필 |
 | C-5 | Safety Layer (Rate Limiter, Prefixer, Audit Log) |
 
-### Phase D: MCP 서버 래핑 (v0.1 대상 기능만)
+### Phase D: MCP 서버 래핑 (v0.1) 🔄
 
-**기간:** 1주
+**상태:** **진행 중 (70%)**
+**기간:** 예상 1주
+**산출물:** `packages/mcp-server/`
 
-| # | 작업 |
-|---|------|
-| D-1 | StdioServerTransport 기본 구조 |
-| D-2 | Read-Only Tools (list_chats, read_chat) |
-| D-3 | Resources (kakao:// URI) |
-| D-4 | Credential Store (환경변수 + 로컬 암호화 저장) |
+| # | 작업 | 상태 |
+|---|------|:----:|
+| D-1 | StdioServerTransport 기본 구조 | ✅ |
+| D-2 | Read-Only Tools (kakao_list_chats, kakao_read_chat) | ✅ |
+| D-3 | Resources (kakao://chats, kakao://chat/{id}) | ✅ |
+| D-4 | Credential Store (환경변수 + 로컬 암호화 저장) | 🔜 진행 중 |
+| D-5 | Safety Layer (Rate Limiter, Audit Log) | ⬜ |
 
 ### Phase E: 실시간 + Daemon (v0.3)
 
@@ -348,13 +359,13 @@ Stage 3: Login     🟡  LOCO Server (동적 IP) → LOGINLIST → 세션 수립
 ### Phase 관계도
 
 ```
-Phase A ──(통과)──▶ Phase B ──▶ Phase D (v0.1 MVP)
+Phase A ──(통과✅)──▶ Phase B ──▶ Phase D (v0.1 MVP)
   │                      │
-  │ (실패)               ├──▶ Phase C (v0.2 전송 기능)
+  │                      ├──▶ Phase C (v0.2 전송 기능)
   │                      │
   ▼                      └──▶ Phase E (v0.3 실시간)
 접근법 재검토                      │
-                                   └──▶ Phase F (배포)
+(필요 없음!)                       └──▶ Phase F (배포)
 ```
 
 ---
@@ -375,7 +386,7 @@ Phase A ──(통과)──▶ Phase B ──▶ Phase D (v0.1 MVP)
 │  └── Commands (LCHATLIST,    │
 │       SYNCMSG, PING)         │
 │                              │
-│  Auth: email+password        │
+│  Auth: Android passcode      │
 │  Safety: Audit Log (dev 모드)│
 └──────────────────────────────┘
 ```
@@ -393,6 +404,24 @@ Phase A ──(통과)──▶ Phase B ──▶ Phase D (v0.1 MVP)
 
 환경변수 `KAKAO_ENV=development` → dev 모드. 기본값은 prod.
 
+## 7.2 배포 / 포트폴리오 (v0.2 이후 구체화)
+
+워킹 버전(v0.1)이 나오면 본격적으로 설계할 항목.
+
+| 항목 | 목표 |
+|------|------|
+| 설치는 `npx @kakao-mcp/server` 한 줄 | ✅ 이미 계획 완료 |
+| AI 연동은 설정 파일 복붙만으로 | ✅ 이미 계획 완료 |
+| **인증 UX 개선** (QR 로그인, CLI → 브라우저) | 🎯 워킹 버전 후 최우선 과제 |
+| 영문/한글 README + 스크린샷 + 데모 GIF | 🎯 배포 전 필수 |
+| GitHub Pages 랜딩 페이지 | 🎯 있으면 좋음 |
+| npm publish + CI/CD | 🎯 Phase F 표준 |
+
+**핵심 사용자 가치:**
+- 한국인이 가장 필요한 카톡 AI 자동화를 **크로스플랫폼**으로 제공
+- LOCO 프로토콜 리버싱 + 암호학 + TCP 네트워킹의 **기술적 깊이**
+- MCP 표준을 따르므로 **Claude/ChatGPT/Gemini/OpenClaw 어디서든 동작**
+
 ---
 
 ## 8. 기술 스택
@@ -402,7 +431,7 @@ Phase A ──(통과)──▶ Phase B ──▶ Phase D (v0.1 MVP)
 | 런타임 | Node.js >= 18 LTS | 크로스 플랫폼 |
 | 언어 | TypeScript 5.x | |
 | MCP SDK | `@modelcontextprotocol/server` 1.x | |
-| 암호화 | `node:crypto` (내장) | RSA-2048 OAEP, AES-128-GCM |
+| 암호화 | `node:crypto` (내장) | RSA-2048 OAEP SHA-1, **AES-128-CFB** |
 | TCP/TLS | `net`, `tls` (내장) | |
 | BSON | `bson` (npm) | |
 | 테스트 | `vitest` | |
@@ -414,12 +443,12 @@ Phase A ──(통과)──▶ Phase B ──▶ Phase D (v0.1 MVP)
 
 | 리스크 | 확률 | 대책 |
 |--------|:----:|------|
-| 인증 실패 (email+password 막힘) | 중 | QR 로그인, macOS 캐시 추출 대안 즉시 전환 |
-| RSA 공개키 획득 실패 | 중 | KiwiTalk 저장소에서 추출, 카톡 바이너리 리버싱 |
-| LOCO 프로토콜 변경 | 중 | Phase A에서 검증하므로 전체 재작성 방지 |
+| 인증 실패 (email+password 막힘) | 중 | **Android passcode 승인으로 우회 성공 ✅** |
+| RSA 공개키 획득 실패 | 중 | KiwiTalk 저장소에서 추출 성공 ✅ |
+| LOCO 프로토콜 변경 | 중 | Phase A에서 검증 완료 ✅ |
 | 계정 제재 | 중 | v0.1은 읽기 전용. v0.2 전송 시 Rate Limiter + Prefix |
 | 카카오 법적 대응 | 낮음 | 비상업적 오픈소스, "연구 목적" 명시 |
-| Codex가 LOCO 암호화 실수 | 중 | Golden Packet 테스트, Phase A 반복 검증 |
+| Codex가 LOCO 암호화 실수 | 중 | Golden Packet 테스트로 검증 완료 ✅ |
 
 ---
 
@@ -464,7 +493,7 @@ Phase A ──(통과)──▶ Phase B ──▶ Phase D (v0.1 MVP)
 | Audit Log | **dev=전문 / prod=해시** | 디버깅과 보안 분리 |
 | 언어 | TypeScript | MCP SDK 네이티브, 크로스 플랫폼 |
 | LOCO 구현 | 처음부터 구현 | NodeKakao 5년 전 중단 |
-| 인증 | email+password 우선, QR 대안 | 플랫폼 독립성 |
+| 인증 | **Android passcode 승인** | Windows -100 우회 성공 ✅ |
 | MCP SDK | v1.x stable | v2는 Q3 2026 출시 후 마이그레이션 |
 | Write 기본값 | 비활성화 (opt-in) | 계정 보호 |
 | 배포 | npm + GitHub (PlayMCP 등록 안 함) | |
@@ -472,19 +501,23 @@ Phase A ──(통과)──▶ Phase B ──▶ Phase D (v0.1 MVP)
 
 ---
 
-## 13. 잘못 알려진 사실들 (Myths)
+## 13. ✅ 검증 완료된 사실들 (Verified Facts)
 
-| 오해 | 진실 |
-|------|------|
-| "LOCO 바디는 Protobuf" | **BSON** |
-| "NodeKakao 포크하면 빠르게 개발" | **5년 전 프로토콜** |
-| "암호화는 AES-128-CFB" | **AES-128-GCM** (현행) |
-| "RSA 키 크기는 1024, e=65537" | **RSA-2048, e=3** (현행) |
-| "key_encrypt_type은 0x0F" | **0x10(16)**. 한 비트 차이로 수많은 구현체 실패 |
-| "공식 카카오 API 쓰면 된다" | **일반 사용자 사용 불가** |
-| "ChatGPT/Claude/Gemini는 MCP 미지원" | **2026년 현재 모두 공식 지원 중** |
-| "PlayMCP로 모든 카톡 제어 가능" | **나와의 채팅방만 가능** |
+| 이전 오해 | 검증된 진실 |
+|-----------|------------|
+| "LOCO 바디는 Protobuf" | **BSON** ✅ |
+| "NodeKakao 포크하면 빠르게 개발" | **5년 전 프로토콜** ✅ |
+| "암호화는 AES-128-GCM" | **AES-128-CFB** ✅ — ❌ GCM 아님! |
+| "RSA 키 크기는 1024, e=65537" | **RSA-2048, e=3** ✅ |
+| "key_encrypt_type은 0x10(16)" | **0x0F(15)** ✅ — 실서버 검증 완료 |
+| "공식 카카오 API 쓰면 된다" | **일반 사용자 사용 불가** ✅ |
+| "ChatGPT/Claude/Gemini는 MCP 미지원" | **2026년 현재 모두 공식 지원 중** ✅ |
+| "PlayMCP로 모든 카톡 제어 가능" | **나와의 채팅방만 가능** ✅ |
+| "LOGINLIST의 token 필드" | **oauthToken 필드** ✅ — KiwiTalk 코드에서 확인 |
+| "LOCO 서버는 ticket과 동일 포트" | **port=995 + csport=9002** ✅ — CHECKIN 응답 |
 
 ---
 
-> **v5 변경사항:** 실무 운영 모델(Codex+아리아) 도입, Phase A→F 완전 재구성, 검증 상태 표기 시스템(🟢🔵🟡⚠️), v0.1/v0.2/v0.3 범위 명확화, Session Daemon v0.3 연기, Audit Log dev/prod 모드 구분, Phase 관계도 추가.
+> **v6 변경사항:** A-7 LOGINLIST 통과로 Go/No-Go PASSED ✅. 암호화 GCM→CFB 정정. key_encrypt_type 16→15 정정. Phase A 완료 상태 반영. 인증 방식 Android passcode로 변경. Myths 섹션을 Verified Facts로 변경. LOGINLIST BSON 필드명 `token`→`oauthToken` 수정.
+
+(File has 509 lines total.)

@@ -1,0 +1,145 @@
+{
+  "status": 0,
+  "userId": 436650423,
+  "revision": 29,
+  "revisionInfo": "[{\"arg\":false,\"image\":false,\"type\":6,\"support\":2,\"text\":true,\"url\":\"\"},{\"arg\":false,\"image\":false,\"type\":7,\"support\":2,\"text\":true,\"url\":\"\"},{\"arg\":true,\"image\":true,\"type\":10,\"support\":2,\"text\":true,\"url\":\"http://moreinfo.kakao.com\"},{\"arg\":false,\"image\":false,\"type\":12,\"support\":2,\"text\":true,\"url\":\"\"},{\"arg\":false,\"image\":false,\"type\":13,\"support\":2,\"text\":true,\"url\":\"\"},{\"arg\":false,\"image\":false,\"type\":15,\"support\":0,\"text\":true,\"url\":\"\"},{\"arg\":false,\"image\":false,\"type\":16,\"support\":1,\"text\":true,\"url\":\"\"},{\"arg\":false,\"image\":false,\"type\":17,\"support\":2,\"text\":false,\"url\":\"\"},{\"arg\":false,\"image\":false,\"type\":18,\"support\":2,\"text\":true,\"url\":\"\"},{\"arg\":false,\"image\":false,\"type\":20,\"support\":2,\"text\":true,\"url\":\"\"},{\"arg\":false,\"image\":false,\"type\":21,\"support\":0,\"text\":false,\"url\":\"\"},{\"arg\":false,\"image\":false,\"type\":22,\"support\":2,\"text\":false,\"url\":\"\"},{\"arg\":false,\"image\":false,\"type\":23,\"support\":2,\"text\":false,\"url\":\"\"},{\"arg\":false,\"image\":false,\"type\":24,\"support\":2,\"text\":false,\"url\":\"\"},{\"arg\":false,\"image\":false,\"type\":25,\"support\":2,\"text\":false,\"url\":\"\"},{\"arg\":false,\"image\":false,\"type\":26,\"support\":2,\"text\":false,\"url\":\"\"},{\"arg\":false,\"image\":false,\"type\":27,\"support\":2,\"text\":false,\"url\":\"\"},{\"arg\":false,\"image\":false,\"type\":52,\"support\":2,\"text\":false,\"url\":\"\"},{\"arg\":false,\"image\":false,\"type\":71,\"support\":2,\"text\":false,\"url\":\"\"},{\"arg\":false,\"image\":false,\"type\":73,\"support\":2,\"text\":false,\"url\":\"\"},{\"arg\":false,\"image\":false,\"type\":100,\"support\":2,\"text\":false,\"url\":\"\"},{\"arg\":false,\"image\":false,\"type\":101,\"support\":2,\"text\":false,\"url\":\"\"}]",
+  "rp": "AgABAAAA",
+  "minLogId": {
+    "high": 900450000,
+    "low": 0,
+    "unsigned": false
+  },
+  "sb": 1,
+  "chatDatas": [
+    {
+      "c": 387031120097368,
+      "t": "MultiChat",
+      "a": 8,
+      "n": 0,
+      "ii": 0,
+      "s": {
+        "high": 900786526,
+        "low": 1666166785,
+        "unsigned": false
+      },
+      "l": {
+        "logId": {
+          "high": 900786526,
+          "low": 1666166785,
+          "unsigned": false
+        },
+        "chatId": 387031120097368,
+        "type": 1,
+        "authorId": 178657582,
+        "message": "헬레스 개맛있음",
+        "sendAt": 1782139902,
+        "attachment": "{}",
+        "msgId": 1876040901,
+        "prevId": {
+          "high": 900786501,
+          "low": 36452354,
+          "unsigned": false
+        },
+        "revision": 0,
+        "scope": 1
+      },
+      "i": [
+        66906127,
+        152037203,
+        152938208,
+        178657582,
+        182722907
+      ],
+      "k": [
+        "최정규",
+        "사승헌",
+        "강민우",
+        "김민석",
+        "준규"
+      ],
+      "m": null,
+      "mmr": {
+        "high": 896022714,
+        "low": -1066965326,
+        "unsigned": false
+      },
+      "ll": {
+        "high": 900786526,
+        "low": 1666166785,
+        "unsigned": false
+      },
+      "o": 1782139901,
+      "jn": 0,
+      "p": true
+    },
+    {
+      "c": 4963005096642576,
+      "t": "PlusChat",
+      "a": 2,
+      "n": 0,
+      "s": {
+        "high": 900735255,
+        "low": 1709273380,
+        "unsigned": false
+      },
+      "l": {
+        "logId": {
+          "high": 900735255,
+          "low": 1709273380,
+          "unsigned": false
+        },
+        "chatId": 4963005096642576,
+        "type": 71,
+        "authorId": 406180744,
+        "message": "카카오계정 비밀번호 변경",
+        "sendAt": 1782113651,
+        "attachment": "{\"P\":{\"TP\":\"Feed\",\"ME\":\"카카오계정 비밀번호 변경\",\"SID\":\"capri_23161\",\"DID\":\"https://accounts.kakao.com/weblogin/account/security/change_password#checkPassword\",\"SDID\":\"103971\",\"SNM\":\"카카오계정\",\"SIC\":\"https://p.kakaocdn.net/th/talkp/woDqxhtwju/d8mTRrzzSnhAS0Z6zMMBW0/whahsv_640x640_s.jpg\",\"SL\":{\"LPC\":\"http://pf.kakao.com/_EdwuG\",\"LMO\":\"http://pf.kakao.com/_EdwuG\"},\"VA\":\"6.0.0\",\"VI\":\"5.9.8\",\"VW\":\"2.5.1\",\"VM\":\"2.2.0\",\"FW\":false,\"KV\":true,\"BC\":false,\"RF\":\"out-server\",\"AD\":false,\"A\":{\"version\":3,\"code\":\"mklFq0slLu78xl3tVDd7BGnOTIOtekDGwP23QZPJKpE=\",\"createdAt\":1782113650774}},\"C\":{\"TI\":{\"TD\":{\"T\":\"카카오계정 비밀번호 변경\",\"D\":\"- 변경 일시: 2026. 6. 22. 16:34 (한국 표준시)\\n- 기기/브라우저: Windows 10 / Chrome\\n\\n직접 요청한 것이 아니면, 지금 바로 비밀번호를 변경하여 계정을 안전하게 보호해 주세요.\\n\\n비밀번호는 타인에게 절대 알려주지 마세요.\"},\"FT\":true},\"BUT\":1,\"BUL\":[{\"BU\":{\"T\":\"비밀번호 변경\",\"SR\":\"both\"},\"L\":{\"LPC\":\"https://accounts.kakao.com/weblogin/account/security/change_password#checkPassword\",\"LMO\":\"https://auth.kakao.com/fa/main?page=change_password&from_tms_page=password_change\"}},{\"BU\":{\"T\":\"카카오계정 관리\",\"SR\":\"both\"},\"L\":{\"LPC\":\"https://accounts.kakao.com/weblogin/account\",\"LMO\":\"https://auth.kakao.com/fa/main\"}}]},\"K\":{\"ti\":\"103971\",\"ai\":\"23161\"}}",
+        "msgId": -1286853657,
+        "prevId": {
+          "high": 876246393,
+          "low": -1069790918,
+          "unsigned": false
+        },
+        "referer": 0
+      },
+      "ll": {
+        "high": 900735255,
+        "low": 1709273380,
+        "unsigned": false
+      },
+      "ml": {
+        "high": 900450000,
+        "low": 0,
+        "unsigned": false
+      },
+      "i": [
+        406180744
+      ],
+      "k": [
+        "카카오계정"
+      ],
+      "m": null,
+      "p": true,
+      "mmr": {
+        "high": 793581345,
+        "low": -42958848,
+        "unsigned": false
+      },
+      "o": 0
+    }
+  ],
+  "delChatIds": [
+    4975843894949230
+  ],
+  "kc": [],
+  "mcmRevision": 0,
+  "lastTokenId": {
+    "high": 900801309,
+    "low": 1920842046,
+    "unsigned": false
+  },
+  "lastChatId": 0,
+  "ltk": 0,
+  "lbk": 1782147470,
+  "eof": true
+}

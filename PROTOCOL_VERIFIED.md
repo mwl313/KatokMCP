@@ -1,7 +1,7 @@
 # 🔬 PROTOCOL_VERIFIED.md — LOCO Protocol 검증 명세
 
 > Codex 작업용 기술 참고 문서. 검증 상태 표기 (🟢🔵🟡⚠️) 필수 확인.
-> Last updated: 2026-06-22
+> Last updated: 2026-06-23 (A-7 LOGINLIST 통과 — 다수 🟡→🟢 승격)
 
 ---
 
@@ -22,8 +22,10 @@
 |------|--------|------|----------|:----:|
 | Booking | `booking-loco.kakao.com` | 443 | TLS over TCP | 🟢 |
 | Checkin | `ticket-loco.kakao.com` | 995 | TCP | 🟢 |
-| LOCO Server | 동적 (Booking 응답) | 동적 | TCP (AES 암호화) | 🟡 |
-| Kakao Auth | `katalk.kakao.com` | 443 | HTTPS | 🔵 |
+| LOCO Server | CHECKIN 응답의 host:port | 995 (주) / 9002 (CS) | TCP (AES-128-CFB) | 🟢 |
+| Kakao Auth | `katalk.kakao.com` | 443 | HTTPS | 🟢 |
+
+✅ **LOCO Server 상태 🟡→🟢 로 승격 (2026-06-23 LOGINLIST 성공)**
 
 ---
 
@@ -33,16 +35,21 @@
 Stage 1: BOOKING
   Client → booking-loco.kakao.com:443 (TLS)
   GETCONF request → 서버 리스트 응답
-  
+  ✅ 실서버 검증 완료
+
 Stage 2: CHECKIN
   Client → ticket-loco.kakao.com:995 (TCP)
   클라이언트가 생성한 세션 키를 포함한 268-byte 핸드셰이크
   CHECKIN → LOCO 서버 IP/포트
+  ✅ 실서버 검증 완료
 
 Stage 3: LOGIN
-  Client → LOCO Server (동적 IP:Port) (TCP + AES)
+  Client → LOCO Server (동적 IP:Port) (TCP + AES-128-CFB)
   LOGINLIST → 인증 + 채팅방 목록
+  ✅ 실서버 검증 완료 (2026-06-23)
 ```
+
+**✅ 3-Stage 모두 실서버 검증 완료!**
 
 ---
 
@@ -63,14 +70,14 @@ Offset  Size  Type    Field         Description
 22 bytes total
 ```
 
-**상태:** 🟢 (2026-06-22 실서버 GETCONF 요청/응답으로 확인)
+**상태:** 🟢 (실서버 GETCONF/CHECKIN/LOGINLIST 요청/응답으로 확인)
 
 ### 3.2 Body: BSON (Binary JSON)
 
 - MongoDB BSON 명세와 동일하며 npm `bson` 패키지로 직렬화/역직렬화 확인 🟢
 - **⛔ Protobuf 아님**
 
-**상태:** 🟢 (2026-06-22 실서버 GETCONF BSON 디코딩 성공)
+**상태:** 🟢
 
 ---
 
@@ -89,21 +96,21 @@ Offset  Size  Type    Field             Value
 268 bytes total
 ```
 
-**상태:** 🟢 (2026-06-22 포트 995 실서버 CHECKIN 성공)
+**상태:** 🟢 (실서버 CHECKIN 성공)
+
+⚠️ **`key_encrypt_type = 15` (0x0F). 절대 16(0x10) 아님!**
 
 ### 4.2 암호화 스펙
 
-| 항목 | 값 | 상태 |
-|------|-----|:----:|
-| 키 교환 | RSA-2048 OAEP SHA-1 | 🟢 |
-| 데이터 암호화 | AES-128-CFB (NoPadding) | 🟢 |
-| RSA 공개키 지수(e) | **3** | 🟢 |
-| OAEP 해시 / MGF1 | **SHA-1 / SHA-1** | 🟢 |
-| AES 키 길이 | 128 bits (16 bytes) | 🟢 |
-| CFB IV | 16 bytes random (매 프레임 새로) | 🟢 |
-| 무결성 인증 | 없음 (인증 태그 없음) | 🟢 |
-
-**보안 특성:** AES-CFB 프레임은 암호문 변조를 자체 탐지하지 못한다. 변조된 프레임도 복호화되며 변경된 평문을 반환한다.
+| 항목 | 값 | 상태 | 참고 |
+|------|-----|:----:|------|
+| 키 교환 | RSA-2048 OAEP SHA-1 | 🟢 | |
+| 데이터 암호화 | **AES-128-CFB** (NoPadding) | 🟢 | ❌ ~~AES-128-GCM~~ 아님! |
+| RSA 공개키 지수(e) | **3** | 🟢 | |
+| OAEP 해시 / MGF1 | **SHA-1 / SHA-1** | 🟢 | |
+| AES 키 길이 | 128 bits (16 bytes) | 🟢 | |
+| CFB IV | 16 bytes random (매 프레임 새로) | 🟢 | |
+| 무결성 인증 | **없음** (인증 태그 없음) | 🟢 | CFB는 변조 탐지 불가 |
 
 ### 4.3 암호화 프레임
 
@@ -115,7 +122,7 @@ Offset  Size  Field
 0x14    N     ciphertext       AES-128-CFB 암호문
 ```
 
-**상태:** 🟢 (2026-06-22 CHECKIN 요청/응답 roundtrip 확인)
+**상태:** 🟢 (CHECKIN/LOGINLIST 요청/응답 roundtrip 확인)
 
 ### 4.4 RSA 공개키
 
@@ -129,100 +136,158 @@ Offset  Size  Field
 
 ## 5. Method 목록 (Phase A 대상)
 
-### 5.1 GETCONF — 서버 설정 조회
+### 5.1 GETCONF — 서버 설정 조회 ✅
 
 ```
 Direction: Request → Response
 Host: booking-loco.kakao.com:443 (TLS)
 
-Request BSON (실서버 확인 🟢):
+Request BSON:
 {
   MCCMNC: "999",
   os: "win32",
   model: ""
 }
 
-Response BSON (주요 필드, 실서버 확인 🟢):
+Response BSON (주요 필드):
 {
+  status: 0,
   revision: 197,
   wifi: { ports: [995, 8080, ...], encType: 2, ... },
   "3g": { ports: [995, 8080, ...], ... },
-  ticket: {
-    lsl: ["ticket-loco.kakao.com", "211.183.211.10", ...],
-    lsl6: ["ticket-loco.kakao.com", "2404:4600:...", ...]
-  },
+  ticket: { lsl: [...], lsl6: [...] },
+  trailer: { ... },
   ...
 }
 ```
 
-**상태:** 🟢 (2026-06-22 확인, 전체 응답은 `poc/fixtures/getconf-response.json`)
+**상태:** 🟢 (전체 응답은 `poc/fixtures/getconf-response.json`)
 
-### 5.2 CHECKIN — LOCO 서버 할당
+### 5.2 CHECKIN — LOCO 서버 할당 ✅
 
 ```
 Direction: Request → Response (핸드셰이크 이후)
 Host: ticket-loco.kakao.com:995 (TCP + RSA/AES)
 
-Request BSON (실서버 확인 🟢):
+Request BSON:
 {
-  userId: long(1),
-  os: "win32",
+  userId: long(실제 userId),
+  os: "android" or "win32",
   ntype: 0,
-  appVer: "26.5.0",
+  appVer: "26.5.0" or "25.9.2",
   MCCMNC: "999",
   lang: "ko",
   countryISO: "KR",
   useSub: true
 }
 
-Response: `status`, `host`, `host6`, `port`, `cshost`, `csport`, `vsshost`, `vssport`, `cacheExpire`, `MCCMNC`
+Response BSON:
+{
+  status: 0,
+  host: "211.183.211.104",
+  port: 995,
+  cshost: "121.53.93.66",
+  csport: 9002,
+  vsshost: "211.249.241.56",
+  vssport: 9002,
+  cacheExpire: 3600,
+  MCCMNC: "999"
+}
 ```
 
-**상태:** 🟢 (2026-06-22 확인, 전체 응답은 `poc/fixtures/checkin-response.json`)
+**상태:** 🟢 (전체 응답은 `poc/fixtures/checkin-response.json`)
 
-### 5.3 LOGINLIST — 인증 + 초기 채팅방 목록
+### 5.3 LOGINLIST — 인증 + 초기 채팅방 목록 ✅
 
 ```
 Direction: Request → Response
-Host: LOCO Server (AES 암호화)
+Host: LOCO Server (AES-128-CFB 암호화) — CHECKIN 응답의 host:port
 
-Request BSON (추정 🟡):
+Request BSON (KiwiTalk 코드 기반 🟢):
 {
-  userId: long,
-  token: string,         // Access Token
-  appVer: "3.0.0",
-  ...
+  os: "android",                     // 현재 OS
+  ntype: 0,                          // network type
+  appVer: "25.9.2",                  // official app version
+  MCCMNC: "999",                     // network MCCMNC
+  prtVer: "1",                       // protocol version
+  duuid: "64자리 hex",               // device UUID
+  oauthToken: "access_token_string", // ❗ token 아님! oauthToken!
+  lang: "ko",
+  dtype: 0,                          // 2=pc, 0=mobile
+  revision: 0,
+  rp: Buffer([0x00,0x00,0xff,0xff,0x00,0x00]),  // 6 bytes binary
+  pcst: null,                        // PC only
+  chatIds: [],                       // 빈 배열 (첫 요청)
+  maxIds: [],
+  lastTokenId: 0,
+  lastChatId: Long.ZERO,
+  lbk: 0,
+  bg: false
 }
 
-Response: 세션 토큰 + 채팅방 리스트
+Response BSON (주요 필드):
+{
+  status: 0,
+  userId: 436650423,
+  revision: 29,
+  chatDatas: [                       // 채팅방 목록
+    {
+      c: 387031120097368,            // chatroom id
+      t: "MultiChat",                // type: DirectChat/MultiChat/MemoChat/OD/OM
+      a: 8,                          // active member count
+      n: 0,                          // unread count
+      ll: { high, low },             // last log id
+      s: { high, low },              // last seen log id
+      l: {                           // last chatlog
+        logId: { high, low },
+        chatId: 387031120097368,
+        type: 1,
+        authorId: 178657582,
+        message: "헬레스 개맛있음",
+        sendAt: 1782139902,
+        ...
+      },
+      i: [66906127, ...],            // icon user ids
+      k: ["최정규", ...],            // icon user nicknames
+      ...
+    }
+  ],
+  lastTokenId: { high, low },        // pagination token
+  lastChatId: 0,
+  eof: true,                         // end of list
+  ...
+}
 ```
 
-**상태:** 🟡
+**상태:** 🟢 (2026-06-23 실서버 검증 완료. `poc/fixtures/loginlist-response.json`)
 
 ### 5.4 LCHATLIST — 채팅방 목록
 
 ```
 Direction: Request → Response
+Host: LOCO Server (AES-128-CFB 암호화)
 
-Request BSON (추정 🟡):
+Request BSON (KiwiTalk 코드 기반 🔵):
 {
-  chatIds: [long, ...],  // 조회할 채팅방 ID 목록
-  lastToken: string?     // 페이지네이션 토큰
+  chatIds: [long, ...],    // 조회할 채팅방 ID 목록
+  maxIds: [long, ...],     // 각 채팅방의 max log id
+  lastTokenId: long,       // 이전 응답의 lastTokenId
+  lastChatId: long         // 이전 응답의 lastChatId
 }
 ```
 
-**상태:** 🟡
+**상태:** 🟡 (LOGINLIST 응답에 이미 chatDatas 포함)
 
 ### 5.5 SYNCMSG — 메시지 내역
 
 ```
 Direction: Request → Response
 
-Request BSON (추정 🟡):
+Request BSON (KiwiTalk 코드 기반 🔵):
 {
   chatId: long,
-  cur: long,             // 현재 watermark
-  cnt: int,              // 가져올 메시지 개수
+  cur: long,               // 현재 watermark (last log id)
+  cnt: int,                // 가져올 메시지 개수
   ...
 }
 ```
@@ -240,20 +305,25 @@ Interval: 30초
 
 ---
 
-## 6. 에러 코드 (추정)
+## 6. 에러 코드
 
-| Code | 의미 | 상태 |
-|:----:|------|:----:|
-| 0 | 성공 | 🟡 |
-| -500 | 서버 내부 오류 | 🟡 |
-| -501 | 인증 실패 | 🟡 |
-| -502 | 권한 없음 | 🟡 |
-| -950 | 중복 로그인 (KICKOUT) | 🟡 |
-| -979 | 서버 점검 중 | 🟡 |
+| Code | 의미 | 상태 | 비고 |
+|:----:|------|:----:|------|
+| 0 | 성공 | 🟢 | |
+| -100 | 기기 등록 필요 (Windows) | 🟢 | Android passcode 우회 필요 |
+| -201 | 요청 오류 (필드 타입/값 불일치) | 🟡 | LCHATLIST/SYNCMSG에서 확인. lastTokenId 등 Long 타입 변환 문제 추정 |
+| -300 | 요청 오류 (Token/필드 불일치) | 🟢 | `token`→`oauthToken` 수정, `duuid`/`prtVer`/`rp` 등 필드 누락 |
+| -500 | 서버 내부 오류 | 🟡 | |
+| -501 | 인증 실패 | 🟡 | |
+| -502 | 권한 없음 | 🟡 | |
+| -950 | 중복 로그인 (KICKOUT) | 🟡 | |
+| -979 | 서버 점검 중 | 🟡 | |
 
 ---
 
-## 7. 인증: email+password 방식
+## 7. 인증
+
+### Windows login (win32/account/login.json)
 
 ```
 POST https://katalk.kakao.com/win32/account/login.json
@@ -267,33 +337,40 @@ Form:
 
 Response:
   status, userId, access_token, refresh_token, token_type, ...
-
-New device (`status=-100`):
-  구형 /request_passcode.json 및 /register_device.json은 현재 404
-  HKCU/.../DeviceInfo/*/sys_uuid는 서버 등록 device_uuid가 아님
-
-Current Android subdevice approval flow:
-  Agent: android, model: SM-X930 (allowlist 확인)
-  X-VC: SHA-512("BARD|{user_agent}|DANTE|{email}|SIAN")[0..8] hex
-  POST /android/account/passcodeLogin/generate
-  사용자가 KakaoTalk 앱에 서버 발급 passcode 입력
-  POST /android/account/passcodeLogin/registerDevice polling
-  POST /android/account/login.json
 ```
 
-**상태:** 🔵 Windows 로그인과 Android 승인 흐름 구현 및 mock 검증 완료. Android endpoint/allowlist 라이브 확인, 실제 기기 등록은 사용자 동의 대기 중.
+**상태:** 🔵 — 라이브 테스트 결과 `status=-100` (기기 등록 필요). `sys_uuid`는 기기 UUID가 아님.
+
+### Android subdevice passcode 승인 (실제 동작 ✅)
+
+```
+Agent: android, model: SM-X930 (allowlist 확인)
+X-VC: SHA-512("BARD|{user_agent}|DANTE|{email}|SIAN")[0..8] hex
+
+1. POST /android/account/allowlist.json?model_name=SM-X930 (GET)
+2. POST /android/account/passcodeLogin/generate     → passcode 반환
+3. 사용자가 카카오톡 앱에 passcode 입력 (60초 내)
+4. POST /android/account/passcodeLogin/registerDevice polling (status=0까지)
+5. POST /android/account/login.json                  → token 발급
+```
+
+**상태:** 🟢 **라이브 인증 성공!** (userId=436650423, SM-X930 allowlist 통과)
 
 ---
 
 ## 8. Codex 작업 시 주의사항
 
-1. **🟡 항목은 "가설"로 취급.** 실패 시 당황하지 말고 로그를 남길 것
-2. **모든 패킷은 hex dump를 파일로 저장** (poc/fixtures/ 에 Golden Packet 보관)
-3. **토큰/비밀번호는 콘솔 출력 시 마스킹** (`***`)
-4. **RSA e=3**: Node.js `crypto` 모듈에서 지원 여부 먼저 확인. 안 되면 수동 OAEP 구현
-5. **Checkin 암호화**: 실서버 검증값은 `key_encrypt_type=15`, `encrypt_type=2` (AES-128-CFB)
-6. **TLS**: booking-loco.kakao.com:443은 일반 HTTPS 아님. TLS over raw TCP로 시도
+1. ✅ **🟡 항목은 "가설"로 취급** → Phase A에서 다수 🟢 승격 완료
+2. ✅ **모든 패킷은 hex dump를 파일로 저장** → poc/fixtures/ 에 Golden Packet 보관
+3. ✅ **토큰/비밀번호는 콘솔 출력 시 마스킹** (`***`)
+4. ✅ **RSA e=3**: Node.js `crypto` 모듈 지원 확인 → `publicEncrypt` 성공
+5. ✅ **Checkin 암호화**: 실서버 검증값 `key_encrypt_type=15`, `encrypt_type=2` (AES-128-CFB)
+6. ✅ **TLS**: booking-loco.kakao.com:443 → TLS over raw TCP 성공
+7. ⚠️ **LOGINLIST BSON 필드명 주의:** `token` → `oauthToken`. `duuid`, `prtVer`, `rp`, `lbk` 필수
+8. ✅ **Android auth → LOCO protocol os도 "android"** 일치 필요
+9. ⚠️ **key_encrypt_type = 15 (0x0F)**, encrypt_type = 2 (CFB). 절대 GCM 아님
 
 ---
 
-> 이 문서는 OpenKakao 문서와 KiwiTalk 코드를 기반으로 작성되었으며, 실제 검증은 Phase A에서 진행됩니다.
+> 이 문서는 OpenKakao 문서와 KiwiTalk 코드를 기반으로 작성되었으며, Phase A에서 실제 검증 완료.
+> **2026-06-23 업데이트:** 3-Stage 모두 실서버 검증 🟢. AES GCM→CFB 정정. LOGINLIST 필드명 token→oauthToken 정정.
