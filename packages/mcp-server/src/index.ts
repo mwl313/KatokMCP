@@ -34,6 +34,7 @@ import {
   LocoError,
 } from "@kakao-mcp/loco-engine";
 import type { SessionConfig } from "@kakao-mcp/loco-engine";
+import { CredentialStore, storeCredentialsInteractive } from "./credential-store.js";
 
 // ─── State ────────────────────────────────────────────────────────────────
 
