@@ -64,6 +64,7 @@ async function ensureClient(): Promise<LocoClient> {
   console.error(`Auth OK: userId=${auth.userId}`);
 
   client = await LocoClient.connect({ auth });
+  client.startKeepAlive();
   console.error("Session established");
   return client;
 }
