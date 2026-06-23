@@ -27,3 +27,5 @@ PROTOCOL_VERIFIED.md
 *.mp4
 # PoC fixture (개인정보 포함 가능)
 poc/fixtures/
+# 설계 문서 (git 미추적)
+plans/
