@@ -16,9 +16,13 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
-  "keywords": ["kakao", "kakaotalk", "loco", "protocol"],
+  "keywords": [
+    "kakao",
+    "kakaotalk",
+    "loco",
+    "protocol"
+  ],
   "license": "MIT",
-  "private": true,
   "dependencies": {
     "bson": "^7.3.0"
   },
@@ -29,5 +33,8 @@
   "files": [
     "dist",
     "src"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }
