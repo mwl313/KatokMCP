@@ -141,7 +141,7 @@ function formatMessages(syncResponse: Record<string, any>): string {
 // ─── MCP Server ───────────────────────────────────────────────────────────
 
 const server = new Server(
-  { name: "kakao-mcp-server", version: "0.1.0" },
+  { name: "katok-mcp-server", version: "0.1.0" },
   { capabilities: { tools: {}, resources: {} } },
 );
 

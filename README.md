@@ -1,12 +1,12 @@
 <!-- default lang: ko -->
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/KakaoMCP-FFCD00?style=for-the-badge&logo=kakao&logoColor=000000">
-    <img src="https://img.shields.io/badge/KakaoMCP-FFCD00?style=for-the-badge&logo=kakao&logoColor=000000" alt="KakaoMCP" height="40">
+    <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/KatokMCP-FFCD00?style=for-the-badge&logo=kakao&logoColor=000000">
+    <img src="https://img.shields.io/badge/KatokMCP-FFCD00?style=for-the-badge&logo=kakao&logoColor=000000" alt="KatokMCP" height="40">
   </picture>
 </p>
 
-<h1 align="center">KakaoMCP — AI로 카카오톡 제어하기 🤖✉️</h1>
+<h1 align="center">KatokMCP — AI로 카카오톡 제어하기 🤖✉️</h1>
 
 <p align="center">
   <strong>AI 비서(Claude, ChatGPT 등)가 카카오톡을 읽고, 답장하고, 관리할 수 있게 해주는 오픈소스 MCP 서버</strong>
@@ -16,7 +16,7 @@
   <a href="#-한국어"><img src="https://img.shields.io/badge/🇰🇷-한국어-FFCD00?style=flat-square&logo=kakao&logoColor=000000" alt="한국어" height="28"></a>
   <a href="#-english"><img src="https://img.shields.io/badge/🇺🇸-English-3178C6?style=flat-square&logo=typescript&logoColor=white" height="28"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="MIT License" height="28"></a>
-  <a href="https://github.com/mwl313/KakaoMCP"><img src="https://img.shields.io/github/last-commit/mwl313/KakaoMCP?style=flat-square" alt="Last Commit" height="28"></a>
+  <a href="https://github.com/mwl313/KatokMCP"><img src="https://img.shields.io/github/last-commit/mwl313/KatokMCP?style=flat-square" alt="Last Commit" height="28"></a>
 </p>
 
 ---
@@ -31,7 +31,7 @@
 
 ## 🤷 이게 뭐예요?
 
-**KakaoMCP**를 사용하면 여러분의 AI 비서가 **카카오톡을 직접 다룰 수 있게 됩니다.**
+**KatokMCP**를 사용하면 여러분의 AI 비서가 **카카오톡을 직접 다룰 수 있게 됩니다.**
 
 - 📋 **"읽지 않은 메시지가 있는 채팅방 알려줘"** → AI가 채팅방 목록을 확인
 - 📖 **"가족 단톡방에서 오늘 무슨 얘기했어?"** → AI가 메시지를 읽어줌
@@ -64,8 +64,8 @@ MCP(Model Context Protocol)는 AI 모델이 외부 도구와 소통하기 위한
 
 ```bash
 # 저장소 다운로드
-git clone https://github.com/mwl313/KakaoMCP.git
-cd KakaoMCP
+git clone https://github.com/mwl313/KatokMCP.git
+cd KatokMCP
 
 # 패키지 설치
 cd packages/loco-engine && npm install && npm run build
@@ -117,7 +117,7 @@ npm run dev
   "mcpServers": {
     "kakao": {
       "command": "node",
-      "args": ["C:\\path\\to\\KakaoMCP\\packages\\mcp-server\\dist\\index.js"],
+      "args": ["C:\\path\\to\\KatokMCP\\packages\\mcp-server\\dist\\index.js"],
       "env": {
         "KAKAO_EMAIL": "your@email.com",
         "KAKAO_PASSWORD": "your_password",
@@ -130,7 +130,7 @@ npm run dev
 
 **OpenClaw / Claude Code:**
 ```bash
-claude mcp add kakao -- node C:\path\to\KakaoMCP\packages\mcp-server\dist\index.js
+claude mcp add kakao -- node C:\path\to\KatokMCP\packages\mcp-server\dist\index.js
 ```
 
 > 📖 **자세한 설정법은 [AI 서비스 연동 가이드](docs/ai-integration.md)를 참고하세요.** (준비 중)
@@ -208,7 +208,7 @@ MIT License — 자유롭게 사용, 수정, 배포하세요.
 
 ## 🤷 What is this?
 
-**KakaoMCP** is an open-source server that lets your AI assistant (Claude, ChatGPT, etc.) control KakaoTalk — Korea's #1 messaging app.
+**KatokMCP** is an open-source server that lets your AI assistant (Claude, ChatGPT, etc.) control KakaoTalk — Korea's #1 messaging app.
 
 - 📋 **"Show me chats with unread messages"** → AI lists your chat rooms
 - 📖 **"What did my family chat about today?"** → AI reads the messages
@@ -240,8 +240,8 @@ It uses the **MCP (Model Context Protocol)**, an open standard supported by all 
 ### Setup
 
 ```bash
-git clone https://github.com/mwl313/KakaoMCP.git
-cd KakaoMCP
+git clone https://github.com/mwl313/KatokMCP.git
+cd KatokMCP
 
 # Install dependencies
 cd packages/loco-engine && npm install && npm run build
@@ -279,7 +279,7 @@ Add to your `claude_desktop_config.json`:
   "mcpServers": {
     "kakao": {
       "command": "node",
-      "args": ["C:\\path\\to\\KakaoMCP\\packages\\mcp-server\\dist\\index.js"],
+      "args": ["C:\\path\\to\\KatokMCP\\packages\\mcp-server\\dist\\index.js"],
       "env": {
         "KAKAO_EMAIL": "your@email.com",
         "KAKAO_PASSWORD": "your_password",
