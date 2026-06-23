@@ -387,13 +387,17 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
 
 // ─── Main ─────────────────────────────────────────────────────────────────
 
-async function main(): Promise<void> {
+export async function main(): Promise<void> {
   const transport = new StdioServerTransport();
   await server.connect(transport);
   console.error("KakaoMCP server running on stdio");
 }
 
-main().catch((error) => {
-  console.error("Fatal:", error instanceof Error ? error.message : String(error));
-  process.exit(1);
-});
+// Allow running directly (node dist/index.js) or via CLI import
+const isDirectRun = process.argv[1]?.endsWith("index.js");
+if (isDirectRun) {
+  main().catch((error) => {
+    console.error("Fatal:", error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  });
+}

@@ -8,7 +8,7 @@
  */
 
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from "node:crypto";
-import { readFile, writeFile, chmod } from "node:fs/promises";
+import { mkdir, readFile, writeFile, chmod } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -83,6 +83,7 @@ export class CredentialStore {
   async hasAuth(): Promise<boolean> { return existsSync(this.authPath); }
 
   async save(credentials: StoredCredentials): Promise<void> {
+    await mkdir(this.basePath, { recursive: true });
     const plaintext = Buffer.from(JSON.stringify(credentials), "utf-8");
     const payload = encryptData(plaintext, this.passphrase, randomBytes(SALT_LENGTH), randomBytes(IV_LENGTH));
     await writeFile(this.credentialsPath, payload);
@@ -102,6 +103,7 @@ export class CredentialStore {
   }
 
   async saveAuth(auth: StoredAuthResult): Promise<void> {
+    await mkdir(this.basePath, { recursive: true });
     const plaintext = Buffer.from(JSON.stringify(auth), "utf-8");
     const payload = encryptData(plaintext, this.passphrase, randomBytes(SALT_LENGTH), randomBytes(IV_LENGTH));
     await writeFile(this.authPath, payload);
