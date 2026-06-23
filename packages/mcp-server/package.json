@@ -1,6 +1,6 @@
 {
   "name": "@katok-mcp/mcp-server",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "KakaoTalk MCP Server \u2014 AI agent interface for KakaoTalk",
   "type": "module",
   "main": "./dist/index.js",
