@@ -175,6 +175,41 @@ export async function waitForAndroidRegistration(email: string, password: string
   }
 }
 
+export interface RefreshResult {
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+}
+
+/**
+ * Refresh access token using refresh_token.
+ * POST to login.json with refresh=true
+ */
+export async function refreshAccessToken(
+  email: string,
+  refreshToken: string,
+  deviceUuid: string,
+  deviceName = DEFAULT_DEVICE_NAME,
+  opts: AndroidAuthOptions = {},
+): Promise<RefreshResult> {
+  const o = resolveOptions(opts);
+  const form = new URLSearchParams({ email, refresh_token: refreshToken, device_uuid: deviceUuid, device_name: deviceName });
+  const text = await requestText(new URL("login.json", AUTH_BASE_URL), {
+    method: "POST",
+    headers: { ...authHeaders(email, o), "Content-Type": "application/x-www-form-urlencoded" },
+    body: form,
+  }, o);
+  const response: Record<string, unknown> = JSON.parse(text);
+  if (!Number.isInteger(response.status)) throw new Error("Response has no status");
+  if (response.status !== 0) throw new AndroidAuthApiError(response.status as number);
+  const accessToken = response.access_token;
+  const newRefreshToken = response.refresh_token;
+  const tokenType = response.token_type;
+  if (typeof accessToken !== "string") throw new Error("No access token in refresh response");
+  if (typeof newRefreshToken !== "string") throw new Error("No refresh token in refresh response");
+  return { accessToken, refreshToken: newRefreshToken, tokenType: typeof tokenType === "string" ? tokenType : "bearer" };
+}
+
 /** Full Android auth flow: try login, if -100 then passcode approval */
 export async function authenticateAndroid(email: string, password: string, deviceUuid: string, deviceName = DEFAULT_DEVICE_NAME, opts: AndroidAuthOptions = {}): Promise<AuthResult> {
   try {
