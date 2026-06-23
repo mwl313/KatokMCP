@@ -78,6 +78,7 @@ function authHeaders(email: string, opts: ResolvedOptions): Record<string, strin
     "Accept": "*/*",
     "Accept-Language": opts.language,
     "X-VC": computeAndroidXvc(email, ua),
+    "Connection": "close",
   };
 }
 
