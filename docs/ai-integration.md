@@ -14,7 +14,7 @@ npm install
 npm run build
 
 # 3. MCP 서버 실행
-node packages/mcp-server/dist/index.js
+npx -y @katok-mcp/mcp-server
 ```
 
 ---
@@ -26,9 +26,9 @@ node packages/mcp-server/dist/index.js
 ```json
 {
   "mcpServers": {
-    "kakao": {
-      "command": "node",
-      "args": ["{{프로젝트경로}}/packages/mcp-server/dist/index.js"],
+    "katok": {
+      "command": "npx",
+      "args": ["-y", "@katok-mcp/mcp-server"],
       "env": {
         "KAKAO_EMAIL": "your@email.com",
         "KAKAO_PASSWORD": "your_password",
@@ -47,7 +47,7 @@ node packages/mcp-server/dist/index.js
 ## Claude Code (CLI)
 
 ```bash
-claude mcp add kakao -- node /path/to/KatokMCP/packages/mcp-server/dist/index.js
+claude mcp add katok -- npx -y @katok-mcp/mcp-server
 ```
 
 환경변수는 `claude.json` 또는 `.env`에서 설정.
@@ -60,10 +60,11 @@ OpenClaw 설정에서 MCP 서버 추가:
 
 ```yaml
 mcpServers:
-  kakao:
-    command: node
+  katok:
+    command: npx
     args:
-      - /path/to/KatokMCP/packages/mcp-server/dist/index.js
+      - -y
+      - @katok-mcp/mcp-server
     env:
       KAKAO_EMAIL: your@email.com
       KAKAO_PASSWORD: your_password
@@ -79,9 +80,9 @@ mcpServers:
 ```json
 {
   "mcpServers": {
-    "kakao": {
-      "command": "node",
-      "args": ["/path/to/KatokMCP/packages/mcp-server/dist/index.js"],
+    "katok": {
+      "command": "npx",
+      "args": ["-y", "@katok-mcp/mcp-server"],
       "env": {
         "KAKAO_EMAIL": "your@email.com",
         "KAKAO_PASSWORD": "your_password",
