@@ -1,5 +1,5 @@
 {
-  "name": "@kakao-mcp/loco-engine",
+  "name": "@katok-mcp/loco-engine",
   "version": "0.1.0",
   "description": "KakaoTalk LOCO protocol client engine",
   "type": "module",

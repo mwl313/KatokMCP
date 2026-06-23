@@ -1,6 +1,6 @@
 # AI 서비스 연동 가이드
 
-> KakaoMCP MCP 서버를 다양한 AI 비서에 연결하는 방법
+> KatokMCP MCP 서버를 다양한 AI 비서에 연결하는 방법
 
 ---
 
@@ -47,7 +47,7 @@ node packages/mcp-server/dist/index.js
 ## Claude Code (CLI)
 
 ```bash
-claude mcp add kakao -- node /path/to/KakaoMCP/packages/mcp-server/dist/index.js
+claude mcp add kakao -- node /path/to/KatokMCP/packages/mcp-server/dist/index.js
 ```
 
 환경변수는 `claude.json` 또는 `.env`에서 설정.
@@ -63,7 +63,7 @@ mcpServers:
   kakao:
     command: node
     args:
-      - /path/to/KakaoMCP/packages/mcp-server/dist/index.js
+      - /path/to/KatokMCP/packages/mcp-server/dist/index.js
     env:
       KAKAO_EMAIL: your@email.com
       KAKAO_PASSWORD: your_password
@@ -81,7 +81,7 @@ mcpServers:
   "mcpServers": {
     "kakao": {
       "command": "node",
-      "args": ["/path/to/KakaoMCP/packages/mcp-server/dist/index.js"],
+      "args": ["/path/to/KatokMCP/packages/mcp-server/dist/index.js"],
       "env": {
         "KAKAO_EMAIL": "your@email.com",
         "KAKAO_PASSWORD": "your_password",
