@@ -132,10 +132,14 @@ function getChatGptConfigDir(): string {
   return path.join(os.homedir(), ".config", "ChatGPT Desktop");
 }
 
-function buildCommonEnv(email: string, password: string, deviceUuid: string, allowWrite: boolean): Record<string, string> {
+/**
+ * Build the env object for AI service config files.
+ * KAKAO_PASSWORD is intentionally excluded — MCP server reads
+ * credentials from credential-store fallback (credentials.enc).
+ */
+function buildCommonEnv(email: string, _password: string, deviceUuid: string, allowWrite: boolean): Record<string, string> {
   return {
     KAKAO_EMAIL: email,
-    KAKAO_PASSWORD: password,
     KAKAO_ANDROID_DEVICE_UUID: deviceUuid,
     KAKAO_ALLOW_WRITE: allowWrite ? "YES" : "NO",
   };
@@ -314,18 +318,24 @@ async function cmdSetup(): Promise<void> {
   console.log("  ────────────────────────");
 
   const allowWrite = await confirm({
-    message: "AI가 메시지를 보낼 수 있게 할까요? (전송 시 🤖 표식이 자동 추가됩니다)",
-    default: true,
+    message: "AI가 메시지를 보낼 수 있게 할까요?",
+    default: false,
   });
 
-  // Build the common env
+  if (allowWrite) {
+    console.log("");
+    console.log("  ⚠️  AI가 사용자를 대신해 실제 메시지를 보낼 수 있습니다.");
+    console.log("  테스트 계정 또는 제한된 채팅방에서 먼저 사용하세요.");
+    console.log("");
+  }
+
+  // Build the common env (password excluded for security)
   const env = buildCommonEnv(email, pwValue, deviceUuid, allowWrite);
 
-  // Configure based on selection
+  // Configure based on selection — no env in config (credential-store fallback)
   const serverConfig = {
-    command: "npx",
-    args: ["-y", "@katok-mcp/mcp-server"],
-    env,
+    command: "katok-mcp",
+    args: [],
   };
 
   switch (aiChoice) {
@@ -355,9 +365,8 @@ async function cmdSetup(): Promise<void> {
       }
       const chatgptServerConfig = {
         type: "stdio",
-        command: "npx",
-        args: ["-y", "@katok-mcp/mcp-server"],
-        env,
+        command: "katok-mcp",
+        args: [],
       };
       await saveConfigFile(configPath, "mcp_servers", chatgptServerConfig, "ChatGPT Desktop");
       break;
@@ -395,7 +404,7 @@ async function cmdSetup(): Promise<void> {
     case "openclaw": {
       console.log("");
       console.log("  OpenClaw 설정:");
-      console.log(`    openclaw mcp set katok -- npx -y @katok-mcp/mcp-server`);
+      console.log(`    openclaw mcp set katok -- katok-mcp`);
       console.log("");
       console.log("  환경 변수:");
       for (const [key, value] of Object.entries(env)) {
@@ -434,10 +443,10 @@ function printManualGuide(serverConfig: Record<string, unknown>): void {
   console.log("  다음 JSON을 AI 클라이언트 설정에 추가하세요:");
   console.log("  " + JSON.stringify({ mcpServers: { katok: serverConfig } }, null, 2));
   console.log("");
-  console.log("  또는 환경 변수를 직접 설정 후 실행:");
-  console.log(`    npx -y @katok-mcp/mcp-server`);
+  console.log("  또는 아래 명령으로 직접 실행:");
+  console.log("    katok-mcp");
   console.log("");
-  console.log("  필요한 환경 변수:");
+  console.log("  필요한 환경 변수 (직접 설정 시):");
   console.log("    KAKAO_EMAIL=<이메일>");
   console.log("    KAKAO_PASSWORD=<비밀번호>");
   console.log("    KAKAO_ANDROID_DEVICE_UUID=<디바이스 UUID>");
@@ -496,7 +505,10 @@ async function cmdTeardown(): Promise<void> {
   }
 
   console.log(`  ✅ ${deletedCount}개 파일 삭제 완료`);
-  console.log("  설정이 완전히 제거되었습니다.");
+  console.log("  로컬 데이터가 삭제되었습니다.");
+  console.log("");
+  console.log("  ⚠️  AI 클라이언트 설정 파일(Claude Desktop, Cursor 등)은");
+  console.log("  수동으로 확인하고 katok 항목을 제거하세요.");
   console.log("");
 }
 
