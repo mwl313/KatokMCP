@@ -10,3 +10,11 @@ kakaoauth.env
 *.cert
 !packages/loco-engine/assets/public-key.pem
 .kakao-mcp/
+package-lock.json
+
+# 완료된 가이드/프롬프트/리뷰 (Cline 작업 종료)
+IMPROVEMENTS.md
+IMPROVEMENTS-v2.md
+PROMPT-*.md
+plan_review_*.md
+TASKS.md
