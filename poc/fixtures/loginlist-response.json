@@ -1,0 +1,1 @@
+{"status":0,"userId":100000001,"revision":1,"revisionInfo":"[]","rp":"AA==","minLogId":{"high":0,"low":0,"unsigned":false},"sb":1,"chatDatas":[{"c":900000000000001,"t":"MultiChat","a":3,"n":0,"ii":0,"s":{"high":0,"low":1,"unsigned":false},"l":{"logId":{"high":0,"low":1,"unsigned":false},"message":"synthetic test"},"k":["Alice","Bob"]}]}
