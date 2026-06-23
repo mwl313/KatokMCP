@@ -26,7 +26,6 @@ import {
 import {
   LocoClient,
   authenticateAndroid,
-  readAndroidCredentialsFromEnvironment,
   sendSyncMsgOn,
   sendLchatListOn,
   sendWrite,
@@ -82,10 +81,34 @@ async function ensureClient(): Promise<LocoClient> {
     }
   }
 
-  // 2. Fresh authentication
-  console.error("Authenticating...");
-  const creds = readAndroidCredentialsFromEnvironment();
-  const auth = await authenticateAndroid(creds.email, creds.password, creds.deviceUuid, creds.deviceName);
+  // 2. Fresh authentication — try env vars first, then credential store
+  const envEmail = process.env.KAKAO_EMAIL;
+  const envPassword = process.env.KAKAO_PASSWORD;
+  const envDeviceUuid = process.env.KAKAO_ANDROID_DEVICE_UUID;
+
+  let email: string;
+  let password: string;
+  let deviceUuid: string;
+  let deviceName: string | undefined;
+
+  if (envEmail && envPassword && envDeviceUuid) {
+    console.error("Authenticating (from environment variables)...");
+    email = envEmail;
+    password = envPassword;
+    deviceUuid = envDeviceUuid;
+    deviceName = process.env.KAKAO_ANDROID_DEVICE_NAME;
+  } else if (await store.exists()) {
+    console.error("Authenticating (from credential store)...");
+    const creds = await store.load();
+    email = creds.email;
+    password = creds.password;
+    deviceUuid = creds.deviceUuid;
+    deviceName = creds.deviceName;
+  } else {
+    throw new Error("No credentials found. Run 'katok-mcp setup' first.");
+  }
+
+  const auth = await authenticateAndroid(email, password, deviceUuid, deviceName);
   console.error(`Auth OK: userId=${auth.userId}`);
 
   // 3. Cache token for next session
