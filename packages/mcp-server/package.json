@@ -1,11 +1,12 @@
 {
   "name": "@katok-mcp/mcp-server",
-  "version": "0.1.0",
+  "version": "0.1.4",
   "description": "KakaoTalk MCP Server — AI agent interface for KakaoTalk",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
-    "kakao-mcp": "./dist/index.js"
+    "katok-mcp": "./dist/cli.js",
+    "katok-mcp-server": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -14,17 +15,30 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
-  "keywords": ["kakao", "kakaotalk", "mcp", "ai", "agent"],
+  "keywords": [
+    "kakao",
+    "kakaotalk",
+    "mcp",
+    "cli",
+    "setup",
+    "ai",
+    "agent"
+  ],
   "license": "MIT",
-  "private": true,
   "dependencies": {
+    "@inquirer/prompts": "^5.5.0",
     "@katok-mcp/loco-engine": "file:../loco-engine",
     "@modelcontextprotocol/sdk": "^1.9.0"
   },
   "devDependencies": {
     "@types/node": "^26.0.0",
-    "typescript": "^6.0.3",
-    "tsx": "^4.22.4"
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3"
   },
-  "files": ["dist"]
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }
