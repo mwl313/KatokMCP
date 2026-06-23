@@ -5,8 +5,7 @@
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
-    "katok-mcp": "./dist/cli.js",
-    "katok-mcp-server": "./dist/index.js"
+    "katok-mcp": "./dist/cli.js"
   },
   "scripts": {
     "build": "tsc",
