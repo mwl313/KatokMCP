@@ -43,7 +43,7 @@
 
 MCP(Model Context Protocol)는 AI 모델이 외부 도구와 소통하기 위한 국제 표준입니다. Claude, ChatGPT, Gemini, OpenClaw 등 **모든 주요 AI 서비스**와 호환됩니다.
 
-<video src="https://github.com/mwl313/KatokMCP/raw/main/katok_demo.mp4" controls width="100%" style="max-width: 720px;"></video>
+<video src="https://github.com/mwl313/KatokMCP/releases/download/v0.2.4/katok_demo.mp4" controls width="100%" style="max-width: 720px;"></video>
 
 <sub><i>데모 영상: Claude Desktop에서 KakaoTalk 채팅방 조회 및 메시지 전송</i></sub>
 
@@ -242,7 +242,7 @@ MIT License — 자유롭게 사용, 수정, 배포하세요.
 
 MCP (Model Context Protocol) is an open standard for AI models to interact with external tools. Supported by Claude, ChatGPT, Gemini, OpenClaw, and more.
 
-<video src="https://github.com/mwl313/KatokMCP/raw/main/katok_demo.mp4" controls width="100%" style="max-width: 720px;"></video>
+<video src="https://github.com/mwl313/KatokMCP/releases/download/v0.2.4/katok_demo.mp4" controls width="100%" style="max-width: 720px;"></video>
 
 <sub><i>Demo: AI assistant reading KakaoTalk chats and sending messages</i></sub>
 
