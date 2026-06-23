@@ -65,14 +65,14 @@ MCP(Model Context Protocol)는 AI 모델이 외부 도구와 소통하기 위한
 ### 2. 설치
 
 ```bash
-# 저장소 다운로드
-git clone https://github.com/mwl313/KatokMCP.git
-cd KatokMCP
+# 방법 1: npx로 바로 실행 (권장)
+npx @katok-mcp/mcp-server
 
-# 패키지 설치
-cd packages/loco-engine && npm install && npm run build
-cd ../mcp-server && npm install
-cd ../..
+# 방법 2: 저장소 다운로드
+# git clone https://github.com/mwl313/KatokMCP.git
+# cd KatokMCP
+# cd packages/loco-engine && npm install && npm run build
+# cd ../mcp-server && npm install && cd ../..
 ```
 
 ### 3. 인증 (최초 1회)
@@ -104,12 +104,10 @@ Enter this one-time code in the KakaoTalk app: 0123 (58s)
 ### 4. MCP 서버 실행
 
 ```bash
-cd packages/mcp-server
-set KAKAO_EMAIL=your@email.com
-set KAKAO_PASSWORD=your_password  
-set KAKAO_ANDROID_DEVICE_UUID=0000...0001
-npm run dev
+npx @katok-mcp/mcp-server
 ```
+
+> 최초 실행 시 자동으로 인증(토큰 발급)이 진행되며, 이후에는 캐시된 토큰으로 자동 로그인됩니다.
 
 ### 5. AI 비서와 연결
 
@@ -117,9 +115,9 @@ npm run dev
 ```json
 {
   "mcpServers": {
-    "kakao": {
-      "command": "node",
-      "args": ["C:\\path\\to\\KatokMCP\\packages\\mcp-server\\dist\\index.js"],
+    "katok": {
+      "command": "npx",
+      "args": ["-y", "@katok-mcp/mcp-server"],
       "env": {
         "KAKAO_EMAIL": "your@email.com",
         "KAKAO_PASSWORD": "your_password",
@@ -132,7 +130,7 @@ npm run dev
 
 **OpenClaw / Claude Code:**
 ```bash
-claude mcp add kakao -- node C:\path\to\KatokMCP\packages\mcp-server\dist\index.js
+claude mcp add katok -- npx -y @katok-mcp/mcp-server
 ```
 
 > 📖 **자세한 설정법은 [AI 서비스 연동 가이드](docs/ai-integration.md)를 참고하세요.** (준비 중)
@@ -145,7 +143,7 @@ claude mcp add kakao -- node C:\path\to\KatokMCP\packages\mcp-server\dist\index.
 |------|------|
 | **메시지 전송** | 처음에는 비활성화되어 있음. `KAKAO_ALLOW_WRITE=YES` 설정해야 전송 가능 |
 | **AI 표식** | AI가 보낸 메시지에는 자동으로 🤖 이모지가 붙음 (비활성화 가능) |
-| **토큰 저장** | 비밀번호를 안전하게 저장하려면 `kakao-mcp store-credentials` 명령어 사용 (AES-256-GCM 암호화) |
+| **토큰 저장** | 비밀번호를 안전하게 저장하려면 `katok-mcp store-credentials` 명령어 사용 (AES-256-GCM 암호화) |
 | **읽기 전용 기본값** | 메시지를 보내지 않고 읽기만 함 |
 | **속도 제한** | 초당 3회로 요청 제한 (남용 방지) |
 | **감사 로그** | 모든 명령어 실행 내역 기록 (dev 모드: 전체, prod 모드: 해시만) |
@@ -242,13 +240,14 @@ MCP (Model Context Protocol) is an open standard for AI models to interact with 
 ### 2. Install
 
 ```bash
-git clone https://github.com/mwl313/KatokMCP.git
-cd KatokMCP
+# Method 1: Run directly with npx (recommended)
+npx @katok-mcp/mcp-server
 
-# Install packages
-cd packages/loco-engine && npm install && npm run build
-cd ../mcp-server && npm install
-cd ../..
+# Method 2: Clone the repository
+# git clone https://github.com/mwl313/KatokMCP.git
+# cd KatokMCP
+# cd packages/loco-engine && npm install && npm run build
+# cd ../mcp-server && npm install && cd ../..
 ```
 
 ### 3. Authentication (first time only)
@@ -280,12 +279,10 @@ Enter this one-time code in the KakaoTalk app: 9418 (58s)
 ### 4. Run the MCP Server
 
 ```bash
-cd packages/mcp-server
-set KAKAO_EMAIL=your@email.com
-set KAKAO_PASSWORD=your_password
-set KAKAO_ANDROID_DEVICE_UUID=0000...0001
-npm run dev
+npx @katok-mcp/mcp-server
 ```
+
+> On first run, authentication (token generation) happens automatically. Subsequent runs use cached tokens for instant login.
 
 ### 5. Connect Your AI Assistant
 
@@ -294,8 +291,8 @@ npm run dev
 {
   "mcpServers": {
     "katok": {
-      "command": "node",
-      "args": ["C:\\path\\to\\KatokMCP\\packages\\mcp-server\\dist\\index.js"],
+      "command": "npx",
+      "args": ["-y", "@katok-mcp/mcp-server"],
       "env": {
         "KAKAO_EMAIL": "your@email.com",
         "KAKAO_PASSWORD": "your_password",
@@ -308,7 +305,7 @@ npm run dev
 
 **OpenClaw / Claude Code:**
 ```bash
-claude mcp add katok -- node C:\path\to\KatokMCP\packages\mcp-server\dist\index.js
+claude mcp add katok -- npx -y @katok-mcp/mcp-server
 ```
 
 > 📖 **See the [AI Integration Guide](docs/ai-integration.md) for more details.** (coming soon)
@@ -321,7 +318,7 @@ claude mcp add katok -- node C:\path\to\KatokMCP\packages\mcp-server\dist\index.
 |------|--------|
 | **Message Sending** | Disabled by default. Set `KAKAO_ALLOW_WRITE=YES` to enable |
 | **AI Prefix** | Bot messages automatically get 🤖 prefix (configurable) |
-| **Token Storage** | AES-256-GCM encrypted credential storage available via `kakao-mcp store-credentials` |
+| **Token Storage** | AES-256-GCM encrypted credential storage available via `katok-mcp store-credentials` |
 | **Read-Only by Default** | Won't send anything unless you explicitly allow it |
 | **Rate Limiting** | Max 3 requests per second (abuse prevention) |
 | **Audit Log** | Full detail in dev mode, hashes only in production |
