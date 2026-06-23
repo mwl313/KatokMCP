@@ -9,7 +9,7 @@
 <h1 align="center">KatokMCP — AI로 카카오톡 제어하기 🤖✉️</h1>
 
 <p align="center">
-  <strong>AI 비서(Claude, ChatGPT 등)가 카카오톡을 읽고, 답장하고, 관리할 수 있게 해주는 오픈소스 MCP 서버</strong>
+  <strong>AI (Claude, ChatGPT, Gemini)가 카카오톡을 읽고, 답장하고, 관리할 수 있게 해주는 오픈소스 MCP 서버</strong>
 </p>
 
 <p align="center">
@@ -26,10 +26,12 @@
 # 🇰🇷 한국어
 
 > **이 프로젝트는 카카오톡의 비공개 프로토콜(LOCO)을 분석하여 구현한 결과물입니다. 연구 및 교육 목적으로만 사용해 주세요.**
+> **강한 힘에는 강한 책임감이 동반됩니다. 강력한 기능들을 책임감 있게 사용해 주세요.**
+
 
 ---
 
-## 🤷 이게 뭐예요?
+## 🤷 그래서 이게 뭐예요?
 
 **KatokMCP**를 사용하면 여러분의 AI 비서가 **카카오톡을 직접 다룰 수 있게 됩니다.**
 
@@ -58,7 +60,7 @@ MCP(Model Context Protocol)는 AI 모델이 외부 도구와 소통하기 위한
 ### 1. 준비물
 - **Node.js 18 이상**이 설치된 컴퓨터
 - **카카오톡 계정** (이메일 + 비밀번호)
-- **안드로이드 폰** (최초 1회 인증용, 이후에는 불필요)
+- **카카오톡 계정이 설치된 폰 (안드 IOS 상관X)** (최초 1회 인증용, 이후에는 불필요)
 
 ### 2. 설치
 
@@ -93,7 +95,7 @@ npm run auth-android-register
 
 **③ passcode 입력 (1회, 60초 내)**
 ```
-Enter this one-time code in the KakaoTalk app: 9418 (58s)
+Enter this one-time code in the KakaoTalk app: 0123 (58s)
 ```
 → 휴대폰 카카오톡 앱을 열고 표시된 번호를 입력하세요.
 
