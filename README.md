@@ -64,6 +64,28 @@ MCP(Model Context Protocol)는 AI 모델이 외부 도구와 소통하기 위한
 
 ### 2. 설치
 
+#### 🚀 1분 설치 (권장)
+
+```bash
+# 글로벌 설치
+npm install -g @katok-mcp/mcp-server
+
+# 설치 마법사 실행 (5단계)
+katok-mcp setup
+```
+
+`katok-mcp setup` 명령어가 다음을 자동으로 처리합니다:
+1. ✅ 카카오톡 계정 입력 (AES-256-GCM 암호화 저장)
+2. ✅ Device UUID 자동 생성
+3. ✅ 휴대폰 인증 (최초 1회 passcode)
+4. ✅ AI 비서 설정 (Claude / ChatGPT / Cursor / VS Code)
+5. ✅ 메시지 전송 허용 여부
+
+**AI 비서를 재시작한 후 말해보세요:**
+> "카톡 채팅방 목록 보여줘"
+
+#### 상세 설치 (개발자용)
+
 ```bash
 # 저장소 다운로드
 git clone https://github.com/mwl313/KatokMCP.git
@@ -78,6 +100,10 @@ cd ../..
 ### 3. 인증 (최초 1회)
 
 > 카카오톡 보안 정책상, 새로운 기기에서 로그인하려면 휴대폰 인증이 필요합니다.
+
+**설치 마법사 사용 시:** `katok-mcp setup`의 Step 3에서 자동으로 처리됩니다.
+
+**직접 설정 시 (환경변수):**
 
 **① 환경변수 설정**
 ```bash
@@ -104,6 +130,13 @@ Enter this one-time code in the KakaoTalk app: 0123 (58s)
 ### 4. MCP 서버 실행
 
 ```bash
+# 방법 A: katok-mcp-server 명령어 (글로벌 설치 후)
+katok-mcp-server
+
+# 방법 B: npx 직접 실행
+npx -y @katok-mcp/mcp-server
+
+# 방법 C: 개발 모드
 cd packages/mcp-server
 set KAKAO_EMAIL=your@email.com
 set KAKAO_PASSWORD=your_password  
@@ -117,9 +150,9 @@ npm run dev
 ```json
 {
   "mcpServers": {
-    "kakao": {
-      "command": "node",
-      "args": ["C:\\path\\to\\KatokMCP\\packages\\mcp-server\\dist\\index.js"],
+    "katok": {
+      "command": "npx",
+      "args": ["-y", "@katok-mcp/mcp-server"],
       "env": {
         "KAKAO_EMAIL": "your@email.com",
         "KAKAO_PASSWORD": "your_password",
@@ -130,12 +163,14 @@ npm run dev
 }
 ```
 
+> 💡 **팁:** `katok-mcp setup` 마법사가 이 설정을 자동으로 생성해줍니다!
+
 **OpenClaw / Claude Code:**
 ```bash
-claude mcp add kakao -- node C:\path\to\KatokMCP\packages\mcp-server\dist\index.js
+claude mcp add katok -- npx -y @katok-mcp/mcp-server
 ```
 
-> 📖 **자세한 설정법은 [AI 서비스 연동 가이드](docs/ai-integration.md)를 참고하세요.** (준비 중)
+> 📖 **자세한 설정법은 [AI 서비스 연동 가이드](docs/ai-integration.md)를 참고하세요.**
 
 ---
 

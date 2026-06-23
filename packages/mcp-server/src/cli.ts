@@ -84,6 +84,26 @@ function getClaudeConfigDir(): string {
   return path.join(os.homedir(), ".config", "Claude");
 }
 
+function getBaseDir(appName: string): string {
+  if (process.platform === "win32") {
+    return path.join(process.env.APPDATA || "", appName, "User");
+  }
+  if (process.platform === "darwin") {
+    return path.join(os.homedir(), "Library", "Application Support", appName, "User");
+  }
+  return path.join(os.homedir(), ".config", appName, "User");
+}
+
+/** Cursor 네이티브 MCP 설정 (.cursor/mcp.json) */
+function getCursorNativeConfigPath(): string {
+  return path.join(os.homedir(), ".cursor", "mcp.json");
+}
+
+/** Cline 확장 설정 (VS Code / Cursor 공용) */
+function getClineConfigPath(baseDir: string): string {
+  return path.join(baseDir, "globalStorage", "roovet.cline", "mcp_settings.json");
+}
+
 function getChatGptConfigDir(): string {
   if (process.platform === "win32") {
     return path.join(process.env.APPDATA || "", "ChatGPT Desktop");
@@ -92,26 +112,6 @@ function getChatGptConfigDir(): string {
     return path.join(os.homedir(), "Library", "Application Support", "com.openai.chat", "config");
   }
   return path.join(os.homedir(), ".config", "ChatGPT Desktop");
-}
-
-function getCursorConfigDir(): string {
-  if (process.platform === "win32") {
-    return path.join(process.env.APPDATA || "", "Cursor", "User");
-  }
-  if (process.platform === "darwin") {
-    return path.join(os.homedir(), "Library", "Application Support", "Cursor", "User");
-  }
-  return path.join(os.homedir(), ".config", "Cursor", "User");
-}
-
-function getVscodeConfigDir(): string {
-  if (process.platform === "win32") {
-    return path.join(process.env.APPDATA || "", "Code", "User");
-  }
-  if (process.platform === "darwin") {
-    return path.join(os.homedir(), "Library", "Application Support", "Code", "User");
-  }
-  return path.join(os.homedir(), ".config", "Code", "User");
 }
 
 function buildCommonEnv(email: string, password: string, deviceUuid: string, allowWrite: boolean): Record<string, string> {
@@ -236,11 +236,24 @@ async function cmdSetup(): Promise<void> {
     console.log("");
     console.log("  ┌────────────────────────────────────────┐");
     console.log(`  │   📱 카카오톡 앱에서 이 번호를 입력    │`);
-    console.log(`  │           [  ${challenge.passcode}  ] (${challenge.remainingSeconds}초)            │`);
+    console.log(`  │           [  ${challenge.passcode}  ]                                 │`);
+    console.log(`  │           (최대 ${challenge.remainingSeconds}초 이내)                     │`);
     console.log("  └────────────────────────────────────────┘");
-    console.log("  ⏳ 인증 대기 중...");
 
-    await waitForAndroidRegistration(email, pwValue, deviceUuid, challenge);
+    // Spinner animation during polling
+    const startTime = Date.now();
+    const spinnerInterval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const dots = ".".repeat((elapsed % 4) + 1);
+      process.stdout.write(`\r  ⏳ 인증 대기 중${dots.padEnd(4)}`);
+    }, 200);
+
+    try {
+      await waitForAndroidRegistration(email, pwValue, deviceUuid, challenge);
+    } finally {
+      clearInterval(spinnerInterval);
+      process.stdout.write("\r  ✅ 인증 완료!                            \n");
+    }
 
     // Now authenticate to get tokens
     const authResult = await authenticateAndroid(email, pwValue, deviceUuid, "SM-X930");
@@ -254,7 +267,6 @@ async function cmdSetup(): Promise<void> {
       savedAt: new Date().toISOString(),
     });
 
-    console.log("  ✅ 인증 완료!");
     console.log("");
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
@@ -310,6 +322,14 @@ async function cmdSetup(): Promise<void> {
     }
 
     case "chatgpt": {
+      const proceed = await confirm({
+        message: "ChatGPT Desktop MCP 지원은 실험적입니다. 계속하시겠습니까?",
+        default: false,
+      });
+      if (!proceed) {
+        printManualGuide(serverConfig);
+        break;
+      }
       const configDir = getChatGptConfigDir();
       const configPath = path.join(configDir, "config.json");
       if (!existsSync(configDir)) {
@@ -326,35 +346,34 @@ async function cmdSetup(): Promise<void> {
     }
 
     case "cursor-vscode": {
-      const cursorDir = getCursorConfigDir();
-      const vscodeDir = getVscodeConfigDir();
       let configured = false;
 
-      // Try Cursor first
-      if (existsSync(cursorDir) || aiChoice === "cursor-vscode") {
-        const cursorConfigPath = path.join(cursorDir, "globalStorage", "roovet.cline", "mcp_settings.json");
-        if (!existsSync(path.dirname(cursorConfigPath))) {
-          await mkdir(path.dirname(cursorConfigPath), { recursive: true });
-        }
-        await saveConfigFile(cursorConfigPath, "mcpServers", serverConfig, "Cursor");
-        configured = true;
+      // 1. Cursor 네이티브 MCP (.cursor/mcp.json)
+      const cursorNativePath = getCursorNativeConfigPath();
+      const cursorNativeDir = path.dirname(cursorNativePath);
+      if (!existsSync(cursorNativeDir)) {
+        await mkdir(cursorNativeDir, { recursive: true });
       }
+      await saveConfigFile(cursorNativePath, "mcpServers", serverConfig, "Cursor (네이티브)");
+      configured = true;
 
-      // VS Code
-      if (existsSync(vscodeDir)) {
-        const vscodeConfigPath = path.join(vscodeDir, "globalStorage", "roovet.cline", "mcp_settings.json");
-        if (!existsSync(path.dirname(vscodeConfigPath))) {
-          await mkdir(path.dirname(vscodeConfigPath), { recursive: true });
-        }
-        await saveConfigFile(vscodeConfigPath, "mcpServers", serverConfig, "VS Code");
-        configured = true;
+      // 2. Cline 확장 설정 (Cursor)
+      const cursorBaseDir = getBaseDir("Cursor");
+      const clineCursorPath = getClineConfigPath(cursorBaseDir);
+      const clineCursorDir = path.dirname(clineCursorPath);
+      if (!existsSync(clineCursorDir)) {
+        await mkdir(clineCursorDir, { recursive: true });
       }
+      await saveConfigFile(clineCursorPath, "mcpServers", serverConfig, "Cursor (Cline 확장)");
 
-      if (!configured) {
-        console.log("  ⚠️  Cursor/VS Code 설정 디렉토리를 찾을 수 없습니다.");
-        console.log("  다음 설정을 직접 추가하세요:");
-        printManualGuide(serverConfig);
+      // 3. Cline 확장 설정 (VS Code)
+      const vscodeBaseDir = getBaseDir("Code");
+      const clineVscodePath = getClineConfigPath(vscodeBaseDir);
+      const clineVscodeDir = path.dirname(clineVscodePath);
+      if (!existsSync(clineVscodeDir)) {
+        await mkdir(clineVscodeDir, { recursive: true });
       }
+      await saveConfigFile(clineVscodePath, "mcpServers", serverConfig, "VS Code (Cline 확장)");
       break;
     }
 
@@ -496,16 +515,29 @@ async function cmdAuth(): Promise<void> {
 
     console.log("  ┌────────────────────────────────────────┐");
     console.log(`  │   📱 카카오톡 앱에서 이 번호를 입력    │`);
-    console.log(`  │           [  ${challenge.passcode}  ] (${challenge.remainingSeconds}초)            │`);
+    console.log(`  │           [  ${challenge.passcode}  ]                                 │`);
+    console.log(`  │           (최대 ${challenge.remainingSeconds}초 이내)                     │`);
     console.log("  └────────────────────────────────────────┘");
-    console.log("  ⏳ 인증 대기 중...");
 
-    await waitForAndroidRegistration(
-      creds.email,
-      creds.password,
-      creds.deviceUuid,
-      challenge,
-    );
+    // Spinner animation during polling
+    const startTime = Date.now();
+    const spinnerInterval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const dots = ".".repeat((elapsed % 4) + 1);
+      process.stdout.write(`\r  ⏳ 인증 대기 중${dots.padEnd(4)}`);
+    }, 200);
+
+    try {
+      await waitForAndroidRegistration(
+        creds.email,
+        creds.password,
+        creds.deviceUuid,
+        challenge,
+      );
+    } finally {
+      clearInterval(spinnerInterval);
+      process.stdout.write("\r  ✅ 인증 완료!                            \n");
+    }
 
     const authResult = await authenticateAndroid(
       creds.email,
@@ -522,7 +554,6 @@ async function cmdAuth(): Promise<void> {
       savedAt: new Date().toISOString(),
     });
 
-    console.log("  ✅ 인증 완료!");
     console.log("");
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
@@ -563,6 +594,16 @@ async function cmdConfig(): Promise<void> {
   );
   console.log(`  Claude Desktop:  ${hasClaudeConfig ? "✅ 설정됨" : "❌ 설정 안 됨"}`);
 
+  // Check Cursor native config
+  const cursorNativePath = getCursorNativeConfigPath();
+  const cursorConfig = await safeReadJson(cursorNativePath);
+  const hasCursorConfig = !!(
+    cursorConfig &&
+    (cursorConfig as Record<string, unknown>)["mcpServers"] &&
+    ((cursorConfig as Record<string, unknown>)["mcpServers"] as Record<string, unknown>)?.["katok"]
+  );
+  console.log(`  Cursor (네이티브):  ${hasCursorConfig ? "✅ 설정됨" : "❌ 설정 안 됨"}`);
+
   console.log("");
   console.log("  명령어:");
   console.log("    katok-mcp setup     → 설정 마법사 실행");
@@ -592,7 +633,7 @@ async function main(): Promise<void> {
     case "help":
     default:
       console.log("");
-      console.log(`  KatokMCP — AI가 카카오톡을 읽고 답장합니다`);
+      console.log(`  ${APP_NAME} — ${APP_TAGLINE}`);
       console.log("");
       console.log("  사용법:");
       console.log("    katok-mcp setup         대화형 설치 마법사");
