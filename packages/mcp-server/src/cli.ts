@@ -3,6 +3,7 @@
  * @katok-mcp/mcp-server CLI — Setup Wizard & Management Commands
  *
  * Commands:
+ *   katok-mcp (기본)    → MCP Server mode (for Claude Desktop)
  *   katok-mcp setup      → 5-step interactive wizard
  *   katok-mcp teardown   → Delete all stored data
  *   katok-mcp auth       → Passcode authentication only
@@ -11,7 +12,7 @@
 
 import { randomBytes } from "node:crypto";
 import { readFile, writeFile, mkdir, copyFile, unlink } from "node:fs/promises";
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import * as path from "node:path";
 import * as os from "node:os";
 import { input, password, select, confirm } from "@inquirer/prompts";
@@ -76,7 +77,24 @@ async function saveConfig(config: SavedConfig): Promise<void> {
 
 function getClaudeConfigDir(): string {
   if (process.platform === "win32") {
-    return path.join(process.env.APPDATA || "", "Claude");
+    // 1. 일반 설치 경로 우선
+    const normalPath = path.join(process.env.APPDATA || "", "Claude");
+    if (existsSync(normalPath)) return normalPath;
+
+    // 2. Microsoft Store 설치 검색
+    const localPackages = path.join(process.env.LOCALAPPDATA || "", "Packages");
+    try {
+      if (existsSync(localPackages)) {
+        const dirs = readdirSync(localPackages);
+        const claudeDir = dirs.find(d => d.toLowerCase().startsWith("claude"));
+        if (claudeDir) {
+          const storePath = path.join(localPackages, claudeDir, "LocalCache", "Roaming", "Claude");
+          if (existsSync(storePath)) return storePath;
+        }
+      }
+    } catch { /* ignore Store lookup errors */ }
+
+    return normalPath;
   }
   if (process.platform === "darwin") {
     return path.join(os.homedir(), "Library", "Application Support", "Claude");
@@ -346,8 +364,6 @@ async function cmdSetup(): Promise<void> {
     }
 
     case "cursor-vscode": {
-      let configured = false;
-
       // 1. Cursor 네이티브 MCP (.cursor/mcp.json)
       const cursorNativePath = getCursorNativeConfigPath();
       const cursorNativeDir = path.dirname(cursorNativePath);
@@ -355,7 +371,6 @@ async function cmdSetup(): Promise<void> {
         await mkdir(cursorNativeDir, { recursive: true });
       }
       await saveConfigFile(cursorNativePath, "mcpServers", serverConfig, "Cursor (네이티브)");
-      configured = true;
 
       // 2. Cline 확장 설정 (Cursor)
       const cursorBaseDir = getBaseDir("Cursor");
@@ -606,16 +621,24 @@ async function cmdConfig(): Promise<void> {
 
   console.log("");
   console.log("  명령어:");
+  console.log("    katok-mcp (기본)  MCP 서버 모드 실행");
   console.log("    katok-mcp setup     → 설정 마법사 실행");
   console.log("    katok-mcp auth      → 인증만 다시 실행");
   console.log("    katok-mcp teardown  → 모든 데이터 삭제");
   console.log("");
 }
 
+// ─── MCP Server Mode ────────────────────────────────────────────────────────
+
+async function startMcpServer(): Promise<void> {
+  const { main: mcpServerMain } = await import("./index.js");
+  await mcpServerMain();
+}
+
 // ─── Main ───────────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
-  const command = process.argv[2] ?? "help";
+  const command = process.argv[2] ?? "server";
 
   switch (command) {
     case "setup":
@@ -630,12 +653,16 @@ async function main(): Promise<void> {
     case "config":
       await cmdConfig();
       break;
+    case "server":
+      await startMcpServer();
+      break;
     case "help":
     default:
       console.log("");
       console.log(`  ${APP_NAME} — ${APP_TAGLINE}`);
       console.log("");
       console.log("  사용법:");
+      console.log("    katok-mcp (기본)      MCP 서버 모드 실행 (Claude Desktop용)");
       console.log("    katok-mcp setup         대화형 설치 마법사");
       console.log("    katok-mcp teardown      저장된 데이터 완전 삭제");
       console.log("    katok-mcp auth          passcode 인증만 다시 실행");
