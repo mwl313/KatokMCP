@@ -330,31 +330,77 @@ Stage 3: Login     🟢  LOCO Server (동적 IP) → LOGINLIST → 세션 수립
 | D-1 | StdioServerTransport 기본 구조 | ✅ |
 | D-2 | Read-Only Tools (kakao_list_chats, kakao_read_chat) | ✅ |
 | D-3 | Resources (kakao://chats, kakao://chat/{id}) | ✅ |
-| D-4 | Credential Store (환경변수 + 로컬 암호화 저장) | 🔜 진행 중 |
-| D-5 | Safety Layer (Rate Limiter, Audit Log) | ⬜ |
+| D-4 | Credential Store (환경변수 + 로컬 암호화 저장) | ✅ |
+| D-5 | Safety Layer (Rate Limiter, Audit Log) | ✅ |
+| D-6 | Access Token Caching (재인증 회피, Rate Limit 방지) | ⬜ |
 
-### Phase E: 실시간 + Daemon (v0.3)
+### Phase E: Access Token Caching (v0.3a) — 중간 단계
+
+**기간:** 1주
+**목적:** 재인증 회피 — LOCO 세션 유지 중 인증 API 재호출 불필요
+
+| # | 작업 |
+|---|------|
+| E-1 | auth 결과(AuthResult)를 credential-store에 암호화 저장 |
+| E-2 | 다음 실행 시 인증 API 생략 → 저장된 토큰으로 LOCO 세션 직접 열기 |
+| E-3 | 토큰 만료 시 자동 갱신 (refresh_token 사용) |
+
+**효과:**
+- 서버 재시작해도 새 인증 불필요
+- Rate Limit(status 30) 회피
+- Android passcode 재승인 불필요
+
+---
+
+### Phase F: Session Daemon (v0.3b) — 장기 연결 안정화
 
 **기간:** 2~3주
 
 | # | 작업 |
 |---|------|
-| E-1 | MSG Push Handler |
-| E-2 | CHANGESVR 대응 |
-| E-3 | Session Daemon 프로세스 분리 (IPC) |
-| E-4 | MCP Notifications |
+| F-1 | MSG Push Handler (실시간 이벤트 수신) |
+| F-2 | CHANGESVR 자동 대응 + 재연결 |
+| F-3 | Session Daemon 프로세스 분리 (IPC — Unix Socket / localhost) |
+| F-4 | MCP Notifications (새 메시지 Push) |
+| F-5 | PING 실패 감지 + 자동 재연결 루틴 |
 
-### Phase F: 배포 + 원격 + 연동
+**Session Daemon 분리 아키텍처:**
+```
+┌─────────────────────────────┐
+│ Kakao Session Daemon         │
+│  - 인증 + Token 갱신         │
+│  - LOCO TCP 세션 유지        │
+│  - PING / 재연결             │
+│  - MSG Push 버퍼링           │
+└──────────┬──────────────────┘
+           │ IPC (Unix Socket)
+┌──────────▼──────────────────┐
+│ MCP Server                   │
+│  - Tools (읽기/쓰기)         │
+│  - Resources                 │
+│  - Push Notifications        │
+└──────────┬──────────────────┘
+           │ stdio / HTTP
+┌──────────▼──────────────────┐
+│ OpenClaw / Claude / Client   │
+└─────────────────────────────┘
+```
+
+**E-3에서 F-3으로 승격.** v0.3을 두 단계로 분할:
+- **v0.3a (Token Caching)** — 인증 API 재호출 제거, 빠른 MVP
+- **v0.3b (Session Daemon)** — 완전한 프로세스 분리, 최대 안정성
+
+### Phase G: 배포 + 원격 + 연동
 
 **기간:** 2~3주
 
 | # | 작업 |
 |---|------|
-| F-1 | npm publish |
-| F-2 | Streamable HTTP Transport |
-| F-3 | ChatGPT / Claude Web 연동 |
-| F-4 | 문서화 + 연동 가이드 |
-| F-5 | GitHub + CI/CD |
+| G-1 | npm publish |
+| G-2 | Streamable HTTP Transport |
+| G-3 | ChatGPT / Claude Web 연동 |
+| G-4 | 문서화 + 연동 가이드 |
+| G-5 | GitHub + CI/CD |
 
 ### Phase 관계도
 
@@ -363,9 +409,11 @@ Phase A ──(통과✅)──▶ Phase B ──▶ Phase D (v0.1 MVP)
   │                      │
   │                      ├──▶ Phase C (v0.2 전송 기능)
   │                      │
-  ▼                      └──▶ Phase E (v0.3 실시간)
-접근법 재검토                      │
-(필요 없음!)                       └──▶ Phase F (배포)
+  ▼                      ├──▶ Phase E (v0.3a Token Caching)
+접근법 재검토              │         ↓
+(필요 없음!)               └──▶ Phase F (v0.3b Session Daemon)
+                                   ↓
+                              Phase G (v0.4 배포)
 ```
 
 ---
@@ -391,7 +439,8 @@ Phase A ──(통과✅)──▶ Phase B ──▶ Phase D (v0.1 MVP)
 └──────────────────────────────┘
 ```
 
-> ⚠️ Session Daemon 분리는 **v0.3 이후**. v0.1~v0.2는 단일 프로세스로 충분.
+> ⚠️ Session Daemon 분리는 **v0.3b (Phase F)** 이후. v0.1~v0.3a는 단일 프로세스로 충분.
+> **Token Caching (Phase E)** 는 Session Daemon 전 중간 단계로, 인증 API 재호출 없이 Access Token 재사용.
 
 ---
 
@@ -415,7 +464,7 @@ Phase A ──(통과✅)──▶ Phase B ──▶ Phase D (v0.1 MVP)
 | **인증 UX 개선** (QR 로그인, CLI → 브라우저) | 🎯 워킹 버전 후 최우선 과제 |
 | 영문/한글 README + 스크린샷 + 데모 GIF | 🎯 배포 전 필수 |
 | GitHub Pages 랜딩 페이지 | 🎯 있으면 좋음 |
-| npm publish + CI/CD | 🎯 Phase F 표준 |
+| npm publish + CI/CD | 🎯 Phase G 표준 |
 
 **핵심 사용자 가치:**
 - 한국인이 가장 필요한 카톡 AI 자동화를 **크로스플랫폼**으로 제공
@@ -460,8 +509,8 @@ Phase A ──(통과✅)──▶ Phase B ──▶ Phase D (v0.1 MVP)
 | **Claude Desktop** | `claude_desktop_config.json` | Phase D |
 | **Claude Code** | `claude mcp add` | Phase D |
 | **Cursor / VS Code** | `.cursor/mcp.json` | Phase D |
-| **ChatGPT** | Developer Mode (HTTPS 필요) | Phase F |
-| **Claude Web** | Custom Connector (HTTPS 필요) | Phase F |
+| **ChatGPT** | Developer Mode (HTTPS 필요) | Phase G |
+| **Claude Web** | Custom Connector (HTTPS 필요) | Phase G |
 | **Gemini CLI** | MCP 설정 | Phase D |
 
 ---
