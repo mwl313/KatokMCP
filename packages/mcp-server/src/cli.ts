@@ -660,9 +660,19 @@ async function main(): Promise<void> {
     case "config":
       await cmdConfig();
       break;
-    case "server":
-      await startMcpServer();
+    case "server": {
+      const httpFlag = process.argv.includes("--http");
+      const portIndex = process.argv.indexOf("--port");
+      const port = portIndex >= 0 ? parseInt(process.argv[portIndex + 1], 10) : 3000;
+
+      if (httpFlag) {
+        const { startHttpServer } = await import("./http.js");
+        await startHttpServer({ port });
+      } else {
+        await startMcpServer();
+      }
       break;
+    }
     case "help":
     default:
       console.log("");
