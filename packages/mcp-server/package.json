@@ -1,6 +1,6 @@
 {
   "name": "@katok-mcp/mcp-server",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "KakaoTalk MCP Server \u2014 AI agent interface for KakaoTalk",
   "type": "module",
   "main": "./dist/index.js",
@@ -23,7 +23,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@katok-mcp/loco-engine": "^0.1.0",
+    "@katok-mcp/loco-engine": "file:../loco-engine",
     "@modelcontextprotocol/sdk": "^1.9.0"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * @kakao-mcp/mcp-server — KakaoTalk MCP Server
+ * @katok-mcp/mcp-server — KakaoTalk MCP Server
  * 
  * Provides AI agents with tools to interact with KakaoTalk via the LOCO protocol.
  * 
@@ -35,8 +35,8 @@ import {
   getChatId,
   getMessageText,
   LocoError,
-} from "@kakao-mcp/loco-engine";
-import type { SessionConfig } from "@kakao-mcp/loco-engine";
+} from "@katok-mcp/loco-engine";
+import type { SessionConfig } from "@katok-mcp/loco-engine";
 import { CredentialStore, storeCredentialsInteractive, type StoredAuthResult } from "./credential-store.js";
 import { globalRateLimiter, auditLogger, RateLimitError } from "./safety.js";
 

@@ -1,5 +1,5 @@
 /**
- * @kakao-mcp/loco-engine — LOCO Protocol Client Engine
+ * @katok-mcp/loco-engine — LOCO Protocol Client Engine
  * 
  * Entry point exporting all public modules.
  */
