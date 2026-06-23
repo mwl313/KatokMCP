@@ -9,7 +9,7 @@
 <h1 align="center">KatokMCP — AI로 카카오톡 제어하기 🤖✉️</h1>
 
 <p align="center">
-  <strong>AI (Claude, ChatGPT, Gemini 등등)가 카카오톡을 읽고, 답장하고, 관리할 수 있게 해주는 오픈소스 MCP 서버</strong> <br>
+  <strong>Claude Desktop / OpenClaw / Claude Code에서 동작하는 오픈소스 KakaoTalk MCP 서버</strong> <br>
   by 판교동돌주먹 (Pangyo Stonefist)
 </p>
 
@@ -44,7 +44,9 @@
 - ✉️ **"엄마한테 저녁 7시에 도착한다고 보내줘"** → AI가 메시지를 대신 전송
 - 👥 **"이 방에 누가 있어?"** → AI가 채팅방 멤버를 알려줌
 
-MCP(Model Context Protocol)는 AI 모델이 외부 도구와 소통하기 위한 국제 표준입니다. Claude, ChatGPT, Gemini, OpenClaw 등 **모든 주요 AI 서비스**와 호환됩니다.
+MCP(Model Context Protocol)는 AI 모델이 외부 도구와 소통하기 위한 국제 표준입니다.
+Claude Desktop, OpenClaw, Claude Code에서 동작을 확인했습니다.
+기타 MCP 클라이언트는 호환성 표를 참고하세요.
 
 ![KatokMCP 데모](https://github.com/mwl313/KatokMCP/raw/main/katok_demo.gif)
 
@@ -145,7 +147,7 @@ claude mcp add katok -- npx -y @katok-mcp/mcp-server
 |------|------|
 | **메시지 전송** | 처음에는 비활성화되어 있음. `KAKAO_ALLOW_WRITE=YES` 설정해야 전송 가능 |
 | **AI 표식** | AI가 보낸 메시지에는 자동으로 🤖 이모지가 붙음 (비활성화 가능) |
-| **토큰 저장** | 비밀번호를 안전하게 저장하려면 `katok-mcp store-credentials` 명령어 사용 (AES-256-GCM 암호화) |
+| **자격 증명 저장** | `katok-mcp setup`으로 입력한 계정 정보는 AES-256-GCM 암호화 저장. AI 클라이언트 설정 파일에는 비밀번호가 저장되지 않음 |
 | **읽기 전용 기본값** | 메시지를 보내지 않고 읽기만 함 |
 | **속도 제한** | 초당 3회로 요청 제한 (남용 방지) |
 | **감사 로그** | 모든 명령어 실행 내역 기록 (dev 모드: 전체, prod 모드: 해시만) |
@@ -230,20 +232,26 @@ MIT License — 자유롭게 사용, 수정, 배포하세요.
 
 # 🇺🇸 English
 
-> **This project implements KakaoTalk's proprietary LOCO protocol through protocol analysis. For educational and research purposes only.**
+> **This project implements KakaoTalk's proprietary LOCO protocol through protocol analysis.**
+> **For educational and research purposes only.**
+> **With great power comes great responsibility. Use responsibly.**
+>
+> ⚠️ **Unofficial project.** Not affiliated with or endorsed by Kakao Corp.
 
 ---
 
 ## 🤷 What is this?
 
-**KatokMCP** lets your AI assistant **control KakaoTalk** — Korea's #1 messaging app.
+**KatokMCP** lets Claude Desktop, OpenClaw, and Claude Code **control KakaoTalk** — Korea's #1 messaging app.
 
 - 📋 **"Show me chats with unread messages"** → AI lists your chat rooms
 - 📖 **"What did my family chat about today?"** → AI reads the messages
 - ✉️ **"Tell mom I'll be there at 7"** → AI sends the message for you
 - 👥 **"Who's in this chat?"** → AI shows the members
 
-MCP (Model Context Protocol) is an open standard for AI models to interact with external tools. Supported by Claude, ChatGPT, Gemini, OpenClaw, and more.
+MCP (Model Context Protocol) is an open standard for AI models to interact with external tools.
+Verified on Claude Desktop, OpenClaw, and Claude Code.
+See compatibility table for other clients.
 
 ![KatokMCP Demo](https://github.com/mwl313/KatokMCP/raw/main/katok_demo.gif)
 
@@ -333,7 +341,7 @@ claude mcp add katok -- npx -y @katok-mcp/mcp-server
 |------|--------|
 | **Message Sending** | Disabled by default. Set `KAKAO_ALLOW_WRITE=YES` to enable |
 | **AI Prefix** | Bot messages automatically get 🤖 prefix (configurable) |
-| **Token Storage** | AES-256-GCM encrypted credential storage available via `katok-mcp store-credentials` |
+| **Credential Storage** | Account credentials encrypted via AES-256-GCM. Password is never stored in AI client config files |
 | **Read-Only by Default** | Won't send anything unless you explicitly allow it |
 | **Rate Limiting** | Max 3 requests per second (abuse prevention) |
 | **Audit Log** | Full detail in dev mode, hashes only in production |
