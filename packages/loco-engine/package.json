@@ -1,7 +1,7 @@
 {
   "name": "@katok-mcp/loco-engine",
-  "version": "0.1.1",
-  "description": "KakaoTalk LOCO protocol client engine",
+  "version": "0.1.2",
+  "description": "@katok-mcp/loco-engine \u2014 KakaoTalk LOCO protocol engine (RSA + AES-128-CFB, Android auth, TCP persistent connection). Used by @katok-mcp/mcp-server.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
