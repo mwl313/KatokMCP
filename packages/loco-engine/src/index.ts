@@ -57,8 +57,9 @@ export {
   waitForAndroidRegistration,
   computeAndroidXvc,
   readAndroidCredentialsFromEnvironment,
+  refreshAccessToken,
 } from "./auth/android.js";
-export type { AndroidAuthOptions, AndroidPasscodeChallenge } from "./auth/android.js";
+export type { AndroidAuthOptions, AndroidPasscodeChallenge, RefreshResult } from "./auth/android.js";
 export {
   AuthApiError,
 } from "./auth/types.js";

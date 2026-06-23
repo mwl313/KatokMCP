@@ -19,6 +19,8 @@ export type LocoErrorCode =
   | "HANDSHAKE_FAILED"
   | "AUTH_FAILED"
   | "SESSION_EXPIRED"
+  | "RATE_LIMITED"
+  | "AUTH_EXPIRED"
   | "SERVER_ERROR"
   | "CHANGESVR"
   | "UNKNOWN";
@@ -54,6 +56,12 @@ export function classifyError(error: unknown): LocoError {
   }
   if (lower.includes("handshake") || lower.includes("rsa") || lower.includes("publicencrypt")) {
     return new LocoError("HANDSHAKE_FAILED", msg, error instanceof Error ? error : undefined);
+  }
+  if (lower.includes("status 30")) {
+    return new LocoError("RATE_LIMITED", msg, error instanceof Error ? error : undefined);
+  }
+  if (lower.includes("status 10") || lower.includes("token expired") || lower.includes("status -100")) {
+    return new LocoError("AUTH_EXPIRED", msg, error instanceof Error ? error : undefined);
   }
   if (lower.includes("auth") || lower.includes("login") || lower.includes("token") || lower.includes("-300") || lower.includes("-501")) {
     return new LocoError("AUTH_FAILED", msg, error instanceof Error ? error : undefined);

@@ -37,12 +37,13 @@ import {
   LocoError,
 } from "@kakao-mcp/loco-engine";
 import type { SessionConfig } from "@kakao-mcp/loco-engine";
-import { CredentialStore, storeCredentialsInteractive } from "./credential-store.js";
+import { CredentialStore, storeCredentialsInteractive, type StoredAuthResult } from "./credential-store.js";
 import { globalRateLimiter, auditLogger, RateLimitError } from "./safety.js";
 
 // ─── State ────────────────────────────────────────────────────────────────
 
 let client: LocoClient | null = null;
+const store = new CredentialStore();
 
 // ─── Helper Functions ─────────────────────────────────────────────────────
 
@@ -58,10 +59,44 @@ function decodeLong(value: any): bigint {
 async function ensureClient(): Promise<LocoClient> {
   if (client && client.getConnection().isConnected()) return client;
 
+  // 1. Try cached token first
+  const savedAuth = await store.loadAuth();
+  if (savedAuth) {
+    console.error("Using cached access token...");
+    try {
+      client = await LocoClient.connect({
+        auth: {
+          userId: BigInt(savedAuth.userId),
+          accessToken: savedAuth.accessToken,
+          refreshToken: savedAuth.refreshToken,
+          tokenType: savedAuth.tokenType,
+        },
+      });
+      client.startKeepAlive();
+      console.error("Session established (cached token)");
+      return client;
+    } catch (error) {
+      console.error("Cached token invalid, re-authenticating...");
+      await store.clearAuth().catch(() => {});
+      // fall through to fresh auth
+    }
+  }
+
+  // 2. Fresh authentication
   console.error("Authenticating...");
   const creds = readAndroidCredentialsFromEnvironment();
   const auth = await authenticateAndroid(creds.email, creds.password, creds.deviceUuid, creds.deviceName);
   console.error(`Auth OK: userId=${auth.userId}`);
+
+  // 3. Cache token for next session
+  await store.saveAuth({
+    userId: String(auth.userId),
+    accessToken: auth.accessToken,
+    refreshToken: auth.refreshToken,
+    tokenType: auth.tokenType,
+    savedAt: new Date().toISOString(),
+  }).catch(() => {});
+  console.error("Access token cached for next session");
 
   client = await LocoClient.connect({ auth });
   client.startKeepAlive();
