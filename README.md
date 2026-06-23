@@ -210,14 +210,14 @@ MIT License — 자유롭게 사용, 수정, 배포하세요.
 
 ## 🤷 What is this?
 
-**KatokMCP** is an open-source server that lets your AI assistant (Claude, ChatGPT, etc.) control KakaoTalk — Korea's #1 messaging app.
+**KatokMCP** lets your AI assistant **control KakaoTalk** — Korea's #1 messaging app.
 
 - 📋 **"Show me chats with unread messages"** → AI lists your chat rooms
 - 📖 **"What did my family chat about today?"** → AI reads the messages
 - ✉️ **"Tell mom I'll be there at 7"** → AI sends the message for you
-- 👥 **"Who's in this chat room?"** → AI shows the members
+- 👥 **"Who's in this chat?"** → AI shows the members
 
-It uses the **MCP (Model Context Protocol)**, an open standard supported by all major AI services: Claude, ChatGPT, Gemini, OpenClaw, and more.
+MCP (Model Context Protocol) is an open standard for AI models to interact with external tools. Supported by Claude, ChatGPT, Gemini, OpenClaw, and more.
 
 ---
 
@@ -227,43 +227,57 @@ It uses the **MCP (Model Context Protocol)**, an open standard supported by all 
 |---------|-------------|
 | **List Chats** | All chat rooms with unread counts, members, last message |
 | **Read Messages** | Recent messages from any chat room |
-| **Send Messages** 🤖 | AI replies on your behalf (opt-in, auto 🤖 prefix) |
-| **List Members** | Who's in the chat room |
+| **Send Messages** 🤖 | AI sends replies on your behalf (opt-in required, auto 🤖 prefix) |
+| **List Members** | See who's in a chat room |
 
 ---
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- **Node.js 18+**
+### 1. Prerequisites
+- **Node.js 18+** on your computer
 - **KakaoTalk account** (email + password)
-- **Android phone** (for one-time authentication)
+- **Smartphone with KakaoTalk** (Android or iOS — needed once for authentication)
 
-### Setup
+### 2. Install
 
 ```bash
 git clone https://github.com/mwl313/KatokMCP.git
 cd KatokMCP
 
-# Install dependencies
+# Install packages
 cd packages/loco-engine && npm install && npm run build
 cd ../mcp-server && npm install
 cd ../..
 ```
 
-### One-time Authentication
+### 3. Authentication (first time only)
 
+> KakaoTalk security requires phone verification for new devices.
+
+**① Set environment variables**
 ```bash
 set KAKAO_EMAIL=your@email.com
 set KAKAO_PASSWORD=your_password
-set KAKAO_ANDROID_DEVICE_UUID=0000...0001
+set KAKAO_ANDROID_DEVICE_UUID=0000...0001  # any 64-char hex
 set KAKAO_CONFIRM_ANDROID_REGISTRATION=YES
-cd poc/03-loginlist
-npm run auth-android-register
-# → Enter the passcode in the KakaoTalk app on your phone
 ```
 
-### Run the MCP Server
+**② Run authentication**
+```bash
+cd poc/03-loginlist
+npm run auth-android-register
+```
+
+**③ Enter passcode in the KakaoTalk app (60s window)**
+```
+Enter this one-time code in the KakaoTalk app: 9418 (58s)
+```
+→ Open KakaoTalk on your phone and enter the code.
+
+**④ Done!** Subsequent logins are automatic.
+
+### 4. Run the MCP Server
 
 ```bash
 cd packages/mcp-server
@@ -273,13 +287,13 @@ set KAKAO_ANDROID_DEVICE_UUID=0000...0001
 npm run dev
 ```
 
-### Connect to Claude Desktop
+### 5. Connect Your AI Assistant
 
-Add to your `claude_desktop_config.json`:
+**Claude Desktop** (`claude_desktop_config.json`):
 ```json
 {
   "mcpServers": {
-    "kakao": {
+    "katok": {
       "command": "node",
       "args": ["C:\\path\\to\\KatokMCP\\packages\\mcp-server\\dist\\index.js"],
       "env": {
@@ -292,21 +306,67 @@ Add to your `claude_desktop_config.json`:
 }
 ```
 
+**OpenClaw / Claude Code:**
+```bash
+claude mcp add katok -- node C:\path\to\KatokMCP\packages\mcp-server\dist\index.js
+```
+
+> 📖 **See the [AI Integration Guide](docs/ai-integration.md) for more details.** (coming soon)
+
 ---
 
 ## 🛡️ Security
 
-| Feature | Detail |
-|---------|--------|
+| Item | Detail |
+|------|--------|
 | **Message Sending** | Disabled by default. Set `KAKAO_ALLOW_WRITE=YES` to enable |
 | **AI Prefix** | Bot messages automatically get 🤖 prefix (configurable) |
-| **Token Safety** | AES-256-GCM encrypted credential storage available |
+| **Token Storage** | AES-256-GCM encrypted credential storage available via `kakao-mcp store-credentials` |
 | **Read-Only by Default** | Won't send anything unless you explicitly allow it |
-| **Rate Limiting** | Max 3 requests/second |
+| **Rate Limiting** | Max 3 requests per second (abuse prevention) |
 | **Audit Log** | Full detail in dev mode, hashes only in production |
+
+---
+
+## 🏗️ Architecture (Overview)
+
+```
+KatokMCP
+├── 🧠 MCP Server          ← AI assistant interface
+│   ├── kakao_list_chats   ← List chat rooms
+│   ├── kakao_read_chat    ← Read messages
+│   ├── kakao_send_chat    ← Send messages (opt-in)
+│   └── kakao_list_members ← List members
+│
+└── 🔧 LOCO Engine         ← KakaoTalk protocol implementation
+    ├── Auth (Android passcode)
+    ├── Encryption (RSA + AES)
+    └── Commands (LOGINLIST, SYNCMSG, WRITE, ...)
+```
+
+---
+
+## 📋 Current Status
+
+```
+✅ Auth — KakaoTalk login
+✅ Chat List — All rooms visible
+✅ Read Messages — View conversation history
+✅ Send Messages — AI replies (opt-in)
+✅ List Members — Who's in a room
+✅ Safety — Rate limiting, audit log, AI prefix
+```
 
 ---
 
 ## 📄 License
 
 MIT License — free to use, modify, and distribute.
+
+---
+
+## 🙏 Credits
+
+- **[KiwiTalk](https://github.com/KiwiTalk/KiwiTalk)** — Rust-based LOCO implementation. Invaluable for BSON structure analysis
+- **[OpenKakao](https://github.com/JungHoonGhae/openkakao-cli)** — LOCO protocol documentation
+- **NodeKakao** — Pioneering TypeScript implementation (archived)
