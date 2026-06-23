@@ -1,12 +1,8 @@
 {
   "name": "@katok-mcp/loco-engine",
-<<<<<<< HEAD
   "version": "0.1.2",
   "description": "@katok-mcp/loco-engine \u2014 KakaoTalk LOCO protocol engine (RSA + AES-128-CFB, Android auth, TCP persistent connection). Used by @katok-mcp/mcp-server.",
-=======
-  "version": "0.1.0",
-  "description": "KakaoTalk LOCO protocol client engine",
->>>>>>> feature/http-transport
+
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -21,7 +17,6 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
-<<<<<<< HEAD
   "keywords": [
     "kakao",
     "kakaotalk",
@@ -29,11 +24,7 @@
     "protocol"
   ],
   "license": "MIT",
-=======
-  "keywords": ["kakao", "kakaotalk", "loco", "protocol"],
-  "license": "MIT",
-  "private": true,
->>>>>>> feature/http-transport
+
   "dependencies": {
     "bson": "^7.3.0"
   },
@@ -43,14 +34,10 @@
   },
   "files": [
     "dist",
-<<<<<<< HEAD
     "assets"
   ],
   "publishConfig": {
     "access": "public"
   }
-=======
-    "src"
-  ]
->>>>>>> feature/http-transport
+
 }

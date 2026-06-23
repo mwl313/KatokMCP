@@ -1,6 +1,6 @@
 {
   "name": "@katok-mcp/mcp-server",
-  "version": "0.2.6",
+  "version": "0.3.0",
   "description": "KatokMCP \u2014 AI\ub85c \uce74\uce74\uc624\ud1a1 \uc81c\uc5b4. Claude/OpenClaw/Claude Code\uc5d0\uc11c \uce74\ud1a1 \uc77d\uae30\u00b7\uc804\uc1a1\u00b7\uba64\ubc84 \uc870\ud68c. 1\ubd84 \uc124\uce58 (katok-mcp setup). MCP \ud45c\uc900 \ud638\ud658.",
   "type": "module",
   "main": "./dist/index.js",
