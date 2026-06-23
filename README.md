@@ -9,7 +9,8 @@
 <h1 align="center">KatokMCP — AI로 카카오톡 제어하기 🤖✉️</h1>
 
 <p align="center">
-  <strong>AI (Claude, ChatGPT, Gemini 등등)가 카카오톡을 읽고, 답장하고, 관리할 수 있게 해주는 오픈소스 MCP 서버</strong>
+  <strong>AI (Claude, ChatGPT, Gemini 등등)가 카카오톡을 읽고, 답장하고, 관리할 수 있게 해주는 오픈소스 MCP 서버</strong> <br>
+  by 판교동돌주먹 (Pangyo Stonefist)
 </p>
 
 <p align="center">
