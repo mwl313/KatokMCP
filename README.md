@@ -16,11 +16,14 @@
 <p align="center">
   <a href="#-한국어"><img src="https://img.shields.io/badge/🇰🇷-한국어-FFCD00?style=flat-square&logo=kakao&logoColor=000000" alt="한국어" height="28"></a>
   <a href="#-english"><img src="https://img.shields.io/badge/🇺🇸-English-3178C6?style=flat-square&logo=typescript&logoColor=white" height="28"></a>
+  <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="MIT License" height="28"></a>
   <a href="https://github.com/mwl313/KatokMCP"><img src="https://img.shields.io/github/last-commit/mwl313/KatokMCP?style=flat-square" alt="Last Commit" height="28"></a>
+  <a href="https://github.com/mwl313/KatokMCP/actions"><img src="https://github.com/mwl313/KatokMCP/actions/workflows/ci.yml/badge.svg" alt="CI" height="28"></a>
 </p>
 
----
+> ⚠️ **비공식 프로젝트입니다.** 카카오와 제휴 또는 보증 관계가 아닙니다.
+> Unofficial project. Not affiliated with or endorsed by Kakao Corp.
 
 <br>
 
