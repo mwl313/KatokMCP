@@ -10,28 +10,17 @@ kakaoauth.env
 *.cert
 !packages/loco-engine/assets/public-key.pem
 .kakao-mcp/
-package-lock.json
 
-# 완료된 가이드/프롬프트/리뷰 (Cline 작업 종료)
+# 완료된 가이드/프롬프트/리뷰
 IMPROVEMENTS.md
-IMPROVEMENTS-v2.md
+IMPROVEMENTS-v*.md
 PROMPT-*.md
 plan_review_*.md
 TASKS.md
-# IMPROVEMENTS 완료 — 모든 항목 구현됨
-IMPROVEMENTS-v3.md
-IMPROVEMENTS-v4.md
 STATUS.md
 PLAN.md
 PROTOCOL_VERIFIED.md
-<<<<<<< HEAD
-*.mp4
-# PoC fixture (개인정보 포함 가능)
-poc/fixtures/
-# 설계 문서 (git 미추적)
-plans/
-=======
 
 # PoC fixture (개인정보 포함 가능)
 poc/fixtures/
->>>>>>> feature/http-transport
+*.mp4
