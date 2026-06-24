@@ -9,19 +9,13 @@
 <h1 align="center">KatokMCP — AI로 카카오톡 제어하기 🤖✉️</h1>
 
 <p align="center">
-<<<<<<< HEAD
   <strong>Claude Desktop / OpenClaw / Claude Code에서 동작하는 오픈소스 KakaoTalk MCP 서버</strong> <br>
   by 판교동돌주먹 (Pangyo Stonefist)
-=======
-  <strong>AI (Claude, ChatGPT, Gemini)가 카카오톡을 읽고, 답장하고, 관리할 수 있게 해주는 오픈소스 MCP 서버</strong>
->>>>>>> feature/http-transport
 </p>
 
 <p align="center">
   <a href="#-한국어"><img src="https://img.shields.io/badge/🇰🇷-한국어-FFCD00?style=flat-square&logo=kakao&logoColor=000000" alt="한국어" height="28"></a>
   <a href="#-english"><img src="https://img.shields.io/badge/🇺🇸-English-3178C6?style=flat-square&logo=typescript&logoColor=white" height="28"></a>
-<<<<<<< HEAD
-  <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="MIT License" height="28"></a>
   <a href="https://github.com/mwl313/KatokMCP"><img src="https://img.shields.io/github/last-commit/mwl313/KatokMCP?style=flat-square" alt="Last Commit" height="28"></a>
   <a href="https://github.com/mwl313/KatokMCP/actions"><img src="https://github.com/mwl313/KatokMCP/actions/workflows/ci.yml/badge.svg" alt="CI" height="28"></a>
@@ -29,26 +23,13 @@
 
 > ⚠️ **비공식 프로젝트입니다.** 카카오와 제휴 또는 보증 관계가 아닙니다.
 > Unofficial project. Not affiliated with or endorsed by Kakao Corp.
-=======
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="MIT License" height="28"></a>
-  <a href="https://github.com/mwl313/KatokMCP"><img src="https://img.shields.io/github/last-commit/mwl313/KatokMCP?style=flat-square" alt="Last Commit" height="28"></a>
-</p>
-
----
->>>>>>> feature/http-transport
 
 <br>
 
 # 🇰🇷 한국어
 
-<<<<<<< HEAD
 > **이 프로젝트는 카카오톡의 비공개 프로토콜(LOCO)을 분석하여 구현한 결과물입니다.** <br> **연구 및 교육 목적으로만 사용해 주세요.** <br>
-> **강한 힘에는 강한 책임감이 동반됩니다.**  <br>**강력한 기능들을 책임감 있게 사용해 주세요.**
-=======
-> **이 프로젝트는 카카오톡의 비공개 프로토콜(LOCO)을 분석하여 구현한 결과물입니다. 연구 및 교육 목적으로만 사용해 주세요.**
-> **강한 힘에는 강한 책임감이 동반됩니다. 강력한 기능들을 책임감 있게 사용해 주세요.**
->>>>>>> feature/http-transport
-
+> **강한 힘에는 강한 책임감이 동반됩니다.** <br>**강력한 기능들을 책임감 있게 사용해 주세요.**
 
 ---
 
@@ -61,7 +42,6 @@
 - ✉️ **"엄마한테 저녁 7시에 도착한다고 보내줘"** → AI가 메시지를 대신 전송
 - 👥 **"이 방에 누가 있어?"** → AI가 채팅방 멤버를 알려줌
 
-<<<<<<< HEAD
 MCP(Model Context Protocol)는 AI 모델이 외부 도구와 소통하기 위한 국제 표준입니다.
 Claude Desktop, OpenClaw, Claude Code에서 동작을 확인했습니다.
 기타 MCP 클라이언트는 호환성 표를 참고하세요.
@@ -69,15 +49,12 @@ Claude Desktop, OpenClaw, Claude Code에서 동작을 확인했습니다.
 ![KatokMCP 데모](https://github.com/mwl313/KatokMCP/raw/main/katok_demo.gif)
 
 <sub><i>데모 영상: Claude Desktop에서 KakaoTalk 채팅방 조회 및 메시지 전송</i></sub>
-=======
-MCP(Model Context Protocol)는 AI 모델이 외부 도구와 소통하기 위한 국제 표준입니다. Claude, ChatGPT, Gemini, OpenClaw 등 **모든 주요 AI 서비스**와 호환됩니다.
->>>>>>> feature/http-transport
 
 ---
 
 ## ✨ 주요 기능
 
-| 기능 | 설명 | 
+| 기능 | 설명 |
 |------|------|
 | **채팅방 목록 보기** | 모든 채팅방, 읽지 않은 메시지 수, 멤버, 마지막 메시지 |
 | **메시지 읽기** | 특정 채팅방의 최근 메시지 내역 |
@@ -118,7 +95,6 @@ katok-mcp setup
 #### 상세 설치 (개발자용)
 
 ```bash
-<<<<<<< HEAD
 # 방법 1: npx로 바로 실행 (권장)
 npx @katok-mcp/mcp-server
 
@@ -127,23 +103,12 @@ npx @katok-mcp/mcp-server
 # cd KatokMCP
 # cd packages/loco-engine && npm install && npm run build
 # cd ../mcp-server && npm install && cd ../..
-=======
-# 저장소 다운로드
-git clone https://github.com/mwl313/KatokMCP.git
-cd KatokMCP
-
-# 패키지 설치
-cd packages/loco-engine && npm install && npm run build
-cd ../mcp-server && npm install
-cd ../..
->>>>>>> feature/http-transport
 ```
 
 ### 3. 인증 (최초 1회)
 
 > 카카오톡 보안 정책상, 새로운 기기에서 로그인하려면 휴대폰 인증이 필요합니다.
 
-<<<<<<< HEAD
 > **설치 마법사 사용 시:** `katok-mcp setup`의 Step 3에서 자동으로 처리됩니다.
 
 > **직접 설정 시:** 환경변수 (`KAKAO_EMAIL`, `KAKAO_PASSWORD`, `KAKAO_ANDROID_DEVICE_UUID`)를 설정 후 MCP 서버 실행 시 자동 인증됩니다.
@@ -153,85 +118,20 @@ cd ../..
 설치 마법사(`katok-mcp setup`)가 AI 비서 설정을 자동으로 완료합니다.
 
 **Claude Desktop** (config 자동 생성됨):
-=======
-**설치 마법사 사용 시:** `katok-mcp setup`의 Step 3에서 자동으로 처리됩니다.
-
-**직접 설정 시 (환경변수):**
-
-**① 환경변수 설정**
-```bash
-set KAKAO_EMAIL=your@email.com
-set KAKAO_PASSWORD=your_password
-set KAKAO_ANDROID_DEVICE_UUID=0000...0001  # 아무 64자리 hex
-set KAKAO_CONFIRM_ANDROID_REGISTRATION=YES
-```
-
-**② 인증 실행**
-```bash
-cd poc/03-loginlist
-npm run auth-android-register
-```
-
-**③ passcode 입력 (1회, 60초 내)**
-```
-Enter this one-time code in the KakaoTalk app: 0123 (58s)
-```
-→ 휴대폰 카카오톡 앱을 열고 표시된 번호를 입력하세요.
-
-**④ 완료!** 이후에는 자동 로그인됩니다.
-
-### 4. MCP 서버 실행
-
-```bash
-# 방법 A: katok-mcp-server 명령어 (글로벌 설치 후)
-katok-mcp-server
-
-# 방법 B: npx 직접 실행
-npx -y @katok-mcp/mcp-server
-
-# 방법 C: 개발 모드
-cd packages/mcp-server
-set KAKAO_EMAIL=your@email.com
-set KAKAO_PASSWORD=your_password  
-set KAKAO_ANDROID_DEVICE_UUID=0000...0001
-npm run dev
-```
-
-### 5. AI 비서와 연결
-
-**Claude Desktop** (`claude_desktop_config.json`):
->>>>>>> feature/http-transport
 ```json
 {
   "mcpServers": {
     "katok": {
-<<<<<<< HEAD
       "command": "katok-mcp",
       "args": []
-=======
-      "command": "npx",
-      "args": ["-y", "@katok-mcp/mcp-server"],
-      "env": {
-        "KAKAO_EMAIL": "your@email.com",
-        "KAKAO_PASSWORD": "your_password",
-        "KAKAO_ANDROID_DEVICE_UUID": "0000...0001"
-      }
->>>>>>> feature/http-transport
     }
   }
 }
 ```
 
-<<<<<<< HEAD
 **OpenClaw / Claude Code:**
 ```bash
 openclaw mcp set katok -- npx -y @katok-mcp/mcp-server
-=======
-> 💡 **팁:** `katok-mcp setup` 마법사가 이 설정을 자동으로 생성해줍니다!
-
-**OpenClaw / Claude Code:**
-```bash
->>>>>>> feature/http-transport
 claude mcp add katok -- npx -y @katok-mcp/mcp-server
 ```
 
@@ -245,11 +145,7 @@ claude mcp add katok -- npx -y @katok-mcp/mcp-server
 |------|------|
 | **메시지 전송** | 처음에는 비활성화되어 있음. `KAKAO_ALLOW_WRITE=YES` 설정해야 전송 가능 |
 | **AI 표식** | AI가 보낸 메시지에는 자동으로 🤖 이모지가 붙음 (비활성화 가능) |
-<<<<<<< HEAD
 | **자격 증명 저장** | `katok-mcp setup`으로 입력한 계정 정보는 AES-256-GCM 암호화 저장. AI 클라이언트 설정 파일에는 비밀번호가 저장되지 않음 |
-=======
-| **토큰 저장** | 비밀번호를 안전하게 저장하려면 `kakao-mcp store-credentials` 명령어 사용 (AES-256-GCM 암호화) |
->>>>>>> feature/http-transport
 | **읽기 전용 기본값** | 메시지를 보내지 않고 읽기만 함 |
 | **속도 제한** | 초당 3회로 요청 제한 (남용 방지) |
 | **감사 로그** | 모든 명령어 실행 내역 기록 (dev 모드: 전체, prod 모드: 해시만) |
@@ -259,11 +155,7 @@ claude mcp add katok -- npx -y @katok-mcp/mcp-server
 ## 🏗️ 기술 구조 (간략)
 
 ```
-<<<<<<< HEAD
 KatokMCP
-=======
-카카오MCP
->>>>>>> feature/http-transport
 ├── 🧠 MCP 서버          ← AI 비서와의 인터페이스
 │   ├── kakao_list_chats   ← 채팅방 목록
 │   ├── kakao_read_chat    ← 메시지 읽기
@@ -276,7 +168,6 @@ KatokMCP
     └── 명령어 (LOGINLIST, SYNCMSG, WRITE, ...)
 ```
 
-<<<<<<< HEAD
 ---
 
 ## ✅ 호환성 확인
@@ -289,9 +180,6 @@ KatokMCP
 | **ChatGPT Desktop** | ❓ 미확인 | MCP 기능 실험적 (별도 설정 필요) |
 | **Cursor / VS Code** | ❓ 미확인 | 설정 가능하나 실제 테스트 필요 |
 | **ChatGPT Web** | ❌ 불가능 | MCP 미지원 (HTTP Transport 필요) |
-=======
-기술적으로 궁금한 점은 [PLAN.md](PLAN.md)와 [PROTOCOL_VERIFIED.md](PROTOCOL_VERIFIED.md)를 참고하세요.
->>>>>>> feature/http-transport
 
 ---
 
@@ -304,17 +192,13 @@ KatokMCP
 ✅ 메시지 전송 — AI가 답장 (opt-in)
 ✅ 멤버 조회 — 방에 있는 사람 확인
 ✅ 안전장치 — 속도 제한, 감사 로그, AI 표식
-<<<<<<< HEAD
 ✅ 설치 마법사 — 1분 설정 (katok-mcp setup)
 ✅ Token Caching — 재인증 불필요
 ✅ Credential Store — 환경변수 불필요 (AES-256-GCM 암호화)
-=======
->>>>>>> feature/http-transport
 ```
 
 ---
 
-<<<<<<< HEAD
 ## 🔮 향후 계획
 
 | 단계 | 작업 | 우선순위 |
@@ -327,8 +211,6 @@ KatokMCP
 
 ---
 
-=======
->>>>>>> feature/http-transport
 ## 📄 라이선스
 
 MIT License — 자유롭게 사용, 수정, 배포하세요.
@@ -348,32 +230,23 @@ MIT License — 자유롭게 사용, 수정, 배포하세요.
 
 # 🇺🇸 English
 
-<<<<<<< HEAD
 > **This project implements KakaoTalk's proprietary LOCO protocol through protocol analysis.**
 > **For educational and research purposes only.**
 > **With great power comes great responsibility. Use responsibly.**
 >
 > ⚠️ **Unofficial project.** Not affiliated with or endorsed by Kakao Corp.
-=======
-> **This project implements KakaoTalk's proprietary LOCO protocol through protocol analysis. For educational and research purposes only.**
->>>>>>> feature/http-transport
 
 ---
 
 ## 🤷 What is this?
 
-<<<<<<< HEAD
 **KatokMCP** lets Claude Desktop, OpenClaw, and Claude Code **control KakaoTalk** — Korea's #1 messaging app.
-=======
-**KatokMCP** lets your AI assistant **control KakaoTalk** — Korea's #1 messaging app.
->>>>>>> feature/http-transport
 
 - 📋 **"Show me chats with unread messages"** → AI lists your chat rooms
 - 📖 **"What did my family chat about today?"** → AI reads the messages
 - ✉️ **"Tell mom I'll be there at 7"** → AI sends the message for you
 - 👥 **"Who's in this chat?"** → AI shows the members
 
-<<<<<<< HEAD
 MCP (Model Context Protocol) is an open standard for AI models to interact with external tools.
 Verified on Claude Desktop, OpenClaw, and Claude Code.
 See compatibility table for other clients.
@@ -381,9 +254,6 @@ See compatibility table for other clients.
 ![KatokMCP Demo](https://github.com/mwl313/KatokMCP/raw/main/katok_demo.gif)
 
 <sub><i>Demo: AI assistant reading KakaoTalk chats and sending messages</i></sub>
-=======
-MCP (Model Context Protocol) is an open standard for AI models to interact with external tools. Supported by Claude, ChatGPT, Gemini, OpenClaw, and more.
->>>>>>> feature/http-transport
 
 ---
 
@@ -405,7 +275,6 @@ MCP (Model Context Protocol) is an open standard for AI models to interact with 
 - **KakaoTalk account** (email + password)
 - **Smartphone with KakaoTalk** (Android or iOS — needed once for authentication)
 
-<<<<<<< HEAD
 ### 2. Installation
 
 #### 🚀 1-Minute Setup (Recommended)
@@ -443,75 +312,12 @@ npx @katok-mcp/mcp-server
 ### 4. Connect Your AI Assistant
 
 **Claude Desktop** (auto-configured by setup wizard):
-=======
-### 2. Install
-
-```bash
-git clone https://github.com/mwl313/KatokMCP.git
-cd KatokMCP
-
-# Install packages
-cd packages/loco-engine && npm install && npm run build
-cd ../mcp-server && npm install
-cd ../..
-```
-
-### 3. Authentication (first time only)
-
-> KakaoTalk security requires phone verification for new devices.
-
-**① Set environment variables**
-```bash
-set KAKAO_EMAIL=your@email.com
-set KAKAO_PASSWORD=your_password
-set KAKAO_ANDROID_DEVICE_UUID=0000...0001  # any 64-char hex
-set KAKAO_CONFIRM_ANDROID_REGISTRATION=YES
-```
-
-**② Run authentication**
-```bash
-cd poc/03-loginlist
-npm run auth-android-register
-```
-
-**③ Enter passcode in the KakaoTalk app (60s window)**
-```
-Enter this one-time code in the KakaoTalk app: 9418 (58s)
-```
-→ Open KakaoTalk on your phone and enter the code.
-
-**④ Done!** Subsequent logins are automatic.
-
-### 4. Run the MCP Server
-
-```bash
-cd packages/mcp-server
-set KAKAO_EMAIL=your@email.com
-set KAKAO_PASSWORD=your_password
-set KAKAO_ANDROID_DEVICE_UUID=0000...0001
-npm run dev
-```
-
-### 5. Connect Your AI Assistant
-
-**Claude Desktop** (`claude_desktop_config.json`):
->>>>>>> feature/http-transport
 ```json
 {
   "mcpServers": {
     "katok": {
-<<<<<<< HEAD
       "command": "katok-mcp",
       "args": []
-=======
-      "command": "node",
-      "args": ["C:\\path\\to\\KatokMCP\\packages\\mcp-server\\dist\\index.js"],
-      "env": {
-        "KAKAO_EMAIL": "your@email.com",
-        "KAKAO_PASSWORD": "your_password",
-        "KAKAO_ANDROID_DEVICE_UUID": "0000...0001"
-      }
->>>>>>> feature/http-transport
     }
   }
 }
@@ -519,18 +325,11 @@ npm run dev
 
 **OpenClaw / Claude Code:**
 ```bash
-<<<<<<< HEAD
 openclaw mcp set katok -- npx -y @katok-mcp/mcp-server
 claude mcp add katok -- npx -y @katok-mcp/mcp-server
 ```
 
 > 📖 **See the [AI Integration Guide](docs/ai-integration.md) for more details.**
-=======
-claude mcp add katok -- node C:\path\to\KatokMCP\packages\mcp-server\dist\index.js
-```
-
-> 📖 **See the [AI Integration Guide](docs/ai-integration.md) for more details.** (coming soon)
->>>>>>> feature/http-transport
 
 ---
 
@@ -540,11 +339,7 @@ claude mcp add katok -- node C:\path\to\KatokMCP\packages\mcp-server\dist\index.
 |------|--------|
 | **Message Sending** | Disabled by default. Set `KAKAO_ALLOW_WRITE=YES` to enable |
 | **AI Prefix** | Bot messages automatically get 🤖 prefix (configurable) |
-<<<<<<< HEAD
 | **Credential Storage** | Account credentials encrypted via AES-256-GCM. Password is never stored in AI client config files |
-=======
-| **Token Storage** | AES-256-GCM encrypted credential storage available via `kakao-mcp store-credentials` |
->>>>>>> feature/http-transport
 | **Read-Only by Default** | Won't send anything unless you explicitly allow it |
 | **Rate Limiting** | Max 3 requests per second (abuse prevention) |
 | **Audit Log** | Full detail in dev mode, hashes only in production |
@@ -569,7 +364,6 @@ KatokMCP
 
 ---
 
-<<<<<<< HEAD
 ## ✅ Compatibility
 
 | AI Service | Status | Notes |
@@ -583,8 +377,6 @@ KatokMCP
 
 ---
 
-=======
->>>>>>> feature/http-transport
 ## 📋 Current Status
 
 ```
@@ -594,17 +386,13 @@ KatokMCP
 ✅ Send Messages — AI replies (opt-in)
 ✅ List Members — Who's in a room
 ✅ Safety — Rate limiting, audit log, AI prefix
-<<<<<<< HEAD
 ✅ Setup Wizard — 1-minute automated setup
 ✅ Token Caching — No re-authentication needed
 ✅ Credential Store — AES-256-GCM encrypted, no env vars required
-=======
->>>>>>> feature/http-transport
 ```
 
 ---
 
-<<<<<<< HEAD
 ## 🔮 Roadmap
 
 | Phase | Task | Priority |
@@ -617,8 +405,6 @@ KatokMCP
 
 ---
 
-=======
->>>>>>> feature/http-transport
 ## 📄 License
 
 MIT License — free to use, modify, and distribute.
