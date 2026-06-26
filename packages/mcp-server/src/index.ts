@@ -42,7 +42,8 @@ import { globalRateLimiter, auditLogger, RateLimitError } from "./safety.js";
 // ─── State ────────────────────────────────────────────────────────────────
 
 let client: LocoClient | null = null;
-const store = new CredentialStore();
+const dataDir = process.env.KAKAO_DATA_DIR || undefined;
+const store = new CredentialStore({ basePath: dataDir });
 
 // ─── Helper Functions ─────────────────────────────────────────────────────
 
