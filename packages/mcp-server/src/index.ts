@@ -272,10 +272,21 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const c = await ensureClient();
         const chatId = BigInt(String(args?.chatId ?? ""));
         const members = await sendGetMem(c, chatId);
-        const userIds = (members.memberIds ?? members.members ?? []).map((id: any) => String(decodeLong(id)));
-        const displayMembers = members.displayMembers ?? [];
-        const names = displayMembers.map((m: any) => `${m.nickname ?? "?"} (#${m.userId ?? "?"})`).join("\n");
-        const text = names || `Members: ${userIds.join(", ")}`;
+        // GETMEM response: "members" array of { userId, nickName/nickname, profileImageUrl, ... }
+        // KiwiTalk reference: members = [{ userId: long, nickName: string, ... }]
+        const memberList = members.members ?? [];
+        let text: string;
+        if (Array.isArray(memberList) && memberList.length > 0) {
+          text = memberList.map((m: any) => {
+            const id = decodeLong(m.userId ?? 0);
+            const nick = String(m.nickName ?? m.nickname ?? "");
+            return nick ? `${nick} (#${id})` : `User #${id}`;
+          }).join("\n");
+        } else {
+          // Fallback: try memberIds/members as ID arrays
+          const userIds = (members.memberIds ?? []).map((id: any) => String(decodeLong(id)));
+          text = userIds.length > 0 ? `Members: ${userIds.join(", ")}` : "No members found.";
+        }
         result = { content: [{ type: "text", text }] };
         break;
       }
@@ -302,9 +313,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           break;
         }
 
+        // SYNCMSG params: cur=lower watermark, max=upper bound, cnt=max messages
+        // If cur is too low (negative or below minLogId), the server returns 0 messages.
+        // Fixed: cap cur at 1n (log IDs are 1-based) and use direct count offset without *10n multiplier.
+        const cur = maxLogId > BigInt(count) ? maxLogId - BigInt(count) : 1n;
         const syncResult = await sendSyncMsgOn(c, {
           chatId,
-          cur: maxLogId - BigInt(count) * 10n,
+          cur,
           max: maxLogId,
           cnt: count,
         });
@@ -399,7 +414,8 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
     if (maxLogId === 0n) {
       throw new McpError(ErrorCode.InvalidRequest, `Chat room #${chatId} not found`);
     }
-    const result = await sendSyncMsgOn(c, { chatId, cur: maxLogId - 300n, max: maxLogId, cnt: 30 });
+    const cur = maxLogId > 30n ? maxLogId - 30n : 1n;
+    const result = await sendSyncMsgOn(c, { chatId, cur, max: maxLogId, cnt: 30 });
     return {
       contents: [{ uri, mimeType: "text/plain", text: formatMessages(result) }],
     };

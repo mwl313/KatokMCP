@@ -15,6 +15,17 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { CredentialStore } from "./credential-store.js";
 
+// ─── Helpers ─────────────────────────────────────────────────────────────
+
+function decodeLong(value: any): bigint {
+  if (typeof value === "number") return BigInt(value);
+  if (typeof value === "string") return BigInt(value);
+  if (value && typeof value.high === "number") {
+    return (BigInt(value.high) << 32n) + BigInt(value.low >>> 0);
+  }
+  return 0n;
+}
+
 // ─── State ────────────────────────────────────────────────────────────────
 
 const store = new CredentialStore();
@@ -285,9 +296,20 @@ export async function startHttpServer(options: HttpServerOptions): Promise<void>
         case "kakao_list_members": {
           const chatId = BigInt(String(args?.chatId ?? ""));
           const members = await sendGetMem(client, chatId);
-          const displayMembers = members.displayMembers ?? [];
-          const text = displayMembers.map((m: any) => `${m.nickname ?? "?"} (#${m.userId ?? "?"})`).join("\n");
-          result = { content: [{ type: "text", text: text || "No members found." }] };
+          // GETMEM response: "members" array of { userId, nickName/nickname, profileImageUrl, ... }
+          const memberList = members.members ?? [];
+          let text: string;
+          if (Array.isArray(memberList) && memberList.length > 0) {
+            text = memberList.map((m: any) => {
+              const id = decodeLong(m.userId ?? 0);
+              const nick = String(m.nickName ?? m.nickname ?? "");
+              return nick ? `${nick} (#${id})` : `User #${id}`;
+            }).join("\n");
+          } else {
+            const userIds = (members.memberIds ?? []).map((id: any) => String(decodeLong(id)));
+            text = userIds.length > 0 ? `Members: ${userIds.join(", ")}` : "No members found.";
+          }
+          result = { content: [{ type: "text", text }] };
           break;
         }
 
@@ -312,9 +334,13 @@ export async function startHttpServer(options: HttpServerOptions): Promise<void>
             break;
           }
 
+          // SYNCMSG params: cur=lower watermark, max=upper bound, cnt=max messages
+          // If cur is too low (negative or below minLogId), the server returns 0 messages.
+          // Fixed: cap cur at 1n and use direct count offset without *10n multiplier.
+          const cur = maxLogId > BigInt(count) ? maxLogId - BigInt(count) : 1n;
           const syncResult = await sendSyncMsgOn(client, {
             chatId,
-            cur: maxLogId - BigInt(count) * 10n,
+            cur,
             max: maxLogId,
             cnt: count,
           });
