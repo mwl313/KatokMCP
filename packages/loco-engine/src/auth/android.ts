@@ -7,7 +7,7 @@
  */
 
 import { createHash } from "node:crypto";
-import type { AuthResult } from "./types.js";
+import { AuthApiError, type AuthResult } from "./types.js";
 import { parseLoginResponse } from "./windows.js";
 
 const AUTH_BASE_URL = "https://katalk.kakao.com/android/account/";
@@ -216,7 +216,9 @@ export async function authenticateAndroid(email: string, password: string, devic
   try {
     return await loginAndroid(email, password, deviceUuid, deviceName, opts);
   } catch (error) {
-    if (!(error instanceof AndroidAuthApiError) || error.status !== -100) throw error;
+    if (!(error instanceof AndroidAuthApiError) && !(error instanceof AuthApiError)) throw error;
+    if (error instanceof AndroidAuthApiError && error.status !== -100) throw error;
+    if (error instanceof AuthApiError && error.status !== -100) throw error;
   }
   const challenge = await generateAndroidPasscode(email, password, deviceUuid, deviceName, opts);
   console.log(`Enter passcode in KakaoTalk app: ${challenge.passcode} (${challenge.remainingSeconds}s)`);
